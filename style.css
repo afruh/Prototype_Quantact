@@ -1,0 +1,179 @@
+/* ============================================================
+   QUANTACT - Global Stylesheet
+   ============================================================ */
+
+/* --- Sidebar navigation buttons --- */
+[data-testid="stSidebar"] .stButton > button {
+    background: transparent !important;
+    border: none !important;
+    color: #b0c4de !important;
+    text-align: left !important;
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
+    font-size: 0.95rem !important;
+    transition: background 0.2s, color 0.2s !important;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(0, 212, 255, 0.1) !important;
+    color: #00d4ff !important;
+}
+
+[data-testid="stSidebar"] .stButton button[kind="primary"] {
+    background: rgba(0, 212, 255, 0.15) !important;
+    color: #00d4ff !important;
+    border-left: 3px solid #00d4ff !important;
+}
+
+/* --- Hero banner --- */
+.hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 16px;
+    padding: 48px 40px;
+    margin-bottom: 32px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.hero h1 {
+    font-size: 2.4rem;
+    color: #00d4ff;
+    margin-bottom: 8px;
+}
+
+.hero p {
+    font-size: 1.05rem;
+    color: #b0c4de;
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* --- Stat cards (home page) --- */
+.stat-card {
+    background: #1a1a2e;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-card h2 {
+    font-size: 2rem;
+    color: #00d4ff;
+    margin: 0;
+}
+
+.stat-card p {
+    color: #b0c4de;
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+}
+
+/* --- Navigation cards (home page) --- */
+.nav-card {
+    background: #1a1a2e;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 12px;
+    padding: 28px 24px 16px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+}
+
+.nav-card:hover {
+    border-color: #00d4ff;
+    transform: translateY(-2px);
+}
+
+.nav-card h3 {
+    color: #00d4ff;
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+}
+
+.nav-card p {
+    color: #888;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* --- Entity result cards (explore page) --- */
+.entity-card {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+}
+
+.entity-card:hover {
+    border-color: rgba(0, 212, 255, 0.4);
+}
+
+.entity-card h3 {
+    color: #00d4ff;
+    margin: 0 0 6px;
+}
+
+.entity-card .meta {
+    color: #888;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+}
+
+.entity-card .liner {
+    color: #ccc;
+    margin-bottom: 12px;
+}
+
+/* --- Tag pills --- */
+.tag {
+    display: inline-block;
+    background: #0f3460;
+    color: #00d4ff;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.78rem;
+    margin: 2px;
+}
+
+/* --- Collaboration badges --- */
+.b-yes {
+    background: #0d4a2e;
+    color: #00e676;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+}
+
+.b-no {
+    background: #4a1a1a;
+    color: #ff5252;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+}
+
+/* --- Coming soon banner (assistant page) --- */
+.coming {
+    background: linear-gradient(135deg, #0f3460, #16213e);
+    border: 2px dashed rgba(0, 212, 255, 0.3);
+    border-radius: 12px;
+    padding: 60px 40px;
+    text-align: center;
+}
+
+.coming h3 {
+    color: #00d4ff;
+    font-size: 1.8rem;
+}
+
+.coming p {
+    color: #888;
+}
+
+/* --- Global link color --- */
+a {
+    color: #00d4ff !important;
+}
