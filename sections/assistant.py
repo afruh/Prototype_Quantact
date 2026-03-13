@@ -1,6 +1,7 @@
 import streamlit as st
 from rapidfuzz import process, fuzz
 from sections.utils import show_wip_badge
+from database import count_results, get_unique_values, get_all_tags, col
 
 """
 pages/assistant.py
@@ -47,22 +48,6 @@ def _fuzzy_match_tags(user_input, all_tags, score_cutoff=60):
         score_cutoff=score_cutoff,
     )
     return [match[0] for match in results]
-
-
-def _count_results(df, filters):
-    filt = df.copy()
-    if filters["entity_type"]:
-        filt = filt[filt["Entity_Type"].isin(filters["entity_type"])]
-    if filters["collaboration"]:
-        filt = filt[filt["Open_to_Collab"].isin(filters["collaboration"])]
-    if filters["topics"]:
-        filt = filt[
-            filt["Tags"].apply(
-                lambda t: any(tg.lower() in t.lower() for tg in filters["topics"])
-            )
-        ]
-    return len(filt)
-
 
 # -- Step renderers -----------------------------------------------------------
 
@@ -112,7 +97,7 @@ def _step_collaboration(df):
 
 def _step_topics(df):
     all_tags = sorted(
-        {t.strip() for raw in df["Tags"] for t in raw.split(",") if t.strip()}
+        {t.strip() for raw in df["Tags"].dropna() for t in str(raw).split("/") if t.strip()}
     )
 
     _render_history()
@@ -192,7 +177,7 @@ def _step_topics(df):
 
 def _step_results(df):
     filters = st.session_state.wizard_filters
-    count   = _count_results(df, filters)
+    count = count_results(df, st.session_state.wizard_filters)
 
     _render_history()
 

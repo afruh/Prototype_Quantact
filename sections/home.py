@@ -1,4 +1,5 @@
 import streamlit as st
+from database import col as db_col
 
 """
 pages/home.py
@@ -21,7 +22,7 @@ def render(df):
     # Stats row
     total  = len(df)
     types  = df["Entity_Type"].nunique()
-    collab = (df["Open_to_Collab"].str.lower() == "yes").sum()
+    collab = (df[db_col("open_to_collab")].str.lower() == "yes").sum()
     locs   = df["Location"].nunique()
 
     c1, c2, c3, c4 = st.columns(4)

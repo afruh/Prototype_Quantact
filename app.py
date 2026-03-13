@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-
+from database import load_data
 from sections import home, explore, assistant, about, submit
 
 # -- Page config --------------------------------------------------------------
@@ -19,13 +19,6 @@ st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 
 # -- Load data ----------------------------------------------------------------
-@st.cache_data
-def load_data():
-    df = pd.read_excel("MVP_Database.xlsx")
-    for col in ["Tags", "Open_to_Collab", "Industry_experience"]:
-        df[col] = df[col].fillna("Unknown").astype(str)
-    return df
-
 
 df = load_data()
 

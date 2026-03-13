@@ -1,4 +1,5 @@
 import streamlit as st
+from database import FILTERS, apply_filters, apply_keyword_search, get_unique_values, col
 
 """
 pages/explore.py
@@ -9,7 +10,7 @@ Supports pre-filled filters passed via session_state from the AI Assistant.
 def _build_entity_card(row):
     tags_html = " ".join(
         f'<span class="tag">{t.strip()}</span>'
-        for t in row["Tags"].split(",") if t.strip()
+        for t in str(row.get("Tags", "")).split("/") if t.strip()
     )
     cv = str(row["Open_to_Collab"]).lower()
     if cv == "yes":
@@ -28,7 +29,7 @@ def _build_entity_card(row):
         f'<a href="{ws}" target="_blank">Website</a> &nbsp; '
         if ws.startswith("http") else ""
     )
-    em = str(row.get("Contact_email", ""))
+    em = str(row.get("Email", ""))
     nm = str(row.get("Contact_Name", ""))
     contact_link = f'<a href="mailto:{em}">{nm}</a>' if "@" in em else ""
 
@@ -44,68 +45,36 @@ def _build_entity_card(row):
         f"</div>"
     )
 
-
 def render(df):
     st.markdown("## Explore the Database")
     st.caption("Filter and search across all entities in the Geneva quantum ecosystem.")
 
-    # Read pre-filled filters coming from the AI Assistant (consumed once)
-    default_types = st.session_state.pop("filter_types", [])
-    default_tags  = st.session_state.pop("filter_tags",  [])
-    default_col   = st.session_state.pop("filter_col",   [])
+    # Read pre-filled filters from AI Assistant if any
+    active_filters = {}
+    for f in FILTERS:
+        default = st.session_state.pop(f"filter_{f['key']}", [])
+        active_filters[f["key"]] = default
 
-    # Filter panel
+    # Filter panel — built dynamically from FILTERS definition
     with st.expander("Filters", expanded=True):
-        r1, r2, r3 = st.columns(3)
-        with r1:
-            sel_types = st.multiselect(
-                "Entity Type",
-                sorted(df["Entity_Type"].dropna().unique()),
-                default=default_types,
-                placeholder="All types",
-            )
-        with r2:
-            sel_locs = st.multiselect(
-                "Location",
-                sorted(df["Location"].dropna().unique()),
-                placeholder="All locations",
-            )
-        with r3:
-            sel_col = st.multiselect(
-                "Open to Collaboration",
-                sorted(df["Open_to_Collab"].dropna().unique()),
-                default=default_col,
-                placeholder="All",
-            )
+        cols_ui = st.columns(3)
+        for i, f in enumerate(FILTERS):
+            options = get_unique_values(df, f["column"], f["multi_value"])
+            with cols_ui[i % 3]:
+                active_filters[f["key"]] = st.multiselect(
+                    f["label"],
+                    options,
+                    default=active_filters[f["key"]],
+                    placeholder=f"All",
+                    key=f"filter_widget_{f['key']}",
+                )
 
-        all_tags = sorted(
-            {t.strip() for raw in df["Tags"] for t in raw.split(",") if t.strip()}
-        )
-        sel_tags = st.multiselect(
-            "Research Topics / Tags",
-            all_tags,
-            default=default_tags,
-            placeholder="Select topics...",
-        )
-        kw = st.text_input("Keyword search (name or description)", "")
+        kw = st.text_input("Keyword search (name, description, tags...)", "")
 
-    # Apply filters
-    filt = df.copy()
-    if sel_types: filt = filt[filt["Entity_Type"].isin(sel_types)]
-    if sel_locs:  filt = filt[filt["Location"].isin(sel_locs)]
-    if sel_col:   filt = filt[filt["Open_to_Collab"].isin(sel_col)]
-    if sel_tags:
-        filt = filt[
-            filt["Tags"].apply(lambda t: any(tg.lower() in t.lower() for tg in sel_tags))
-        ]
-    if kw:
-        q = kw.lower()
-        filt = filt[
-            filt["Entity_Name"].str.lower().str.contains(q, na=False)
-            | filt["One_Liner"].str.lower().str.contains(q, na=False)
-        ]
+    # Apply
+    filt = apply_filters(df, active_filters)
+    filt = apply_keyword_search(filt, kw)
 
-    # Results
     st.markdown(f"**{len(filt)} result(s) found**")
     st.markdown("---")
 
