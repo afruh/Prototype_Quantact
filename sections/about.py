@@ -7,7 +7,7 @@ About Us page. Edit the content variables at the top of this file.
 # ── EDITABLE CONTENT ─────────────────────────────────────────────────────────
 # Edit the variables below to update the page. No Streamlit knowledge needed.
 
-PAGE_TITLE = "About Quant@ct"
+PAGE_TITLE = "About QuantAct"
 
 PAGE_SUBTITLE = (
     "Bridging academic research and industry in the Geneva quantum ecosystem."
@@ -87,5 +87,5 @@ def render():
     st.markdown(f"### {CONTACT_TITLE}")
     st.markdown(CONTACT_TEXT)
     c1, c2 = st.columns(2)
-    c1.link_button("Send us an email", url=f"mailto:{CONTACT_EMAIL}", use_container_width=True)
-    c2.link_button("Follow us on LinkedIn", url=LINKEDIN_URL, use_container_width=True)
+    c1.link_button("Send us an email", url=f"mailto:{CONTACT_EMAIL}", width="stretch")
+    c2.link_button("Follow us on LinkedIn", url=LINKEDIN_URL, width="stretch")

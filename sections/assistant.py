@@ -1,7 +1,7 @@
 import streamlit as st
 from rapidfuzz import process, fuzz
 from sections.utils import show_wip_badge
-from database import count_results, get_unique_values, get_all_tags, col
+from database import count_results, get_unique_values, get_all_tags, col as db_col
 
 """
 pages/assistant.py
@@ -52,7 +52,12 @@ def _fuzzy_match_tags(user_input, all_tags, score_cutoff=60):
 # -- Step renderers -----------------------------------------------------------
 
 def _step_entity_type(df):
-    entity_types = sorted(df["Entity_Type"].dropna().unique().tolist())
+    entity_types = sorted({
+        t.strip()
+        for val in df[db_col("entity_type")].dropna()
+        for t in str(val).split(" / ")
+        if t.strip()
+    })
 
     _add_message("assistant", "Hello! What type of entity are you looking for?")
     _render_history()
@@ -60,12 +65,12 @@ def _step_entity_type(df):
     with st.chat_message("assistant"):
         cols = st.columns(len(entity_types) + 1)
         for i, etype in enumerate(entity_types):
-            if cols[i].button(etype, key=f"etype_{etype}", use_container_width=True):
+            if cols[i].button(etype, key=f"etype_{etype}", width="stretch"):
                 st.session_state.wizard_filters["entity_type"] = [etype]
                 _add_message("user", etype)
                 st.session_state.wizard_step = 1
                 st.rerun()
-        if cols[-1].button("All types", key="etype_all", use_container_width=True):
+        if cols[-1].button("All types", key="etype_all", width="stretch"):
             st.session_state.wizard_filters["entity_type"] = []
             _add_message("user", "All types")
             st.session_state.wizard_step = 1
@@ -78,17 +83,17 @@ def _step_collaboration(df):
     with st.chat_message("assistant"):
         st.markdown("Should the entity be open to collaboration?")
         c1, c2, c3 = st.columns(3)
-        if c1.button("Yes", key="collab_yes", use_container_width=True):
+        if c1.button("Yes", key="collab_yes", width="stretch"):
             st.session_state.wizard_filters["collaboration"] = ["Yes"]
             _add_message("user", "Open to collaboration")
             st.session_state.wizard_step = 2
             st.rerun()
-        if c2.button("No", key="collab_no", use_container_width=True):
+        if c2.button("No", key="collab_no", width="stretch"):
             st.session_state.wizard_filters["collaboration"] = ["No"]
             _add_message("user", "Not open to collaboration")
             st.session_state.wizard_step = 2
             st.rerun()
-        if c3.button("Does not matter", key="collab_any", use_container_width=True):
+        if c3.button("Does not matter", key="collab_any", width="stretch"):
             st.session_state.wizard_filters["collaboration"] = []
             _add_message("user", "No preference on collaboration")
             st.session_state.wizard_step = 2
@@ -96,9 +101,7 @@ def _step_collaboration(df):
 
 
 def _step_topics(df):
-    all_tags = sorted(
-        {t.strip() for raw in df["Tags"].dropna() for t in str(raw).split("/") if t.strip()}
-    )
+    all_tags = get_unique_values(df, "tags", multi_value=True)
 
     _render_history()
 
@@ -118,10 +121,10 @@ def _step_topics(df):
         ]
         for row in rows:
             cols = st.columns(len(row))
-            for col, tag in zip(cols, row):
+            for btn_col, tag in zip(cols, row):
                 is_selected = tag in selected_topics
                 label = f"+ {tag}" if not is_selected else f"x {tag}"
-                if col.button(label, key=f"tag_{tag}", use_container_width=True):
+                if btn_col.button(label, key=f"tag_{tag}", width="stretch"):
                     if is_selected:
                         selected_topics.remove(tag)
                     else:
@@ -150,7 +153,7 @@ def _step_topics(df):
         a1, a2, a3 = st.columns(3)
 
         if fuzzy_matches:
-            if a1.button("Add matches", key="add_fuzzy", use_container_width=True):
+            if a1.button("Add matches", key="add_fuzzy", width="stretch"):
                 for m in fuzzy_matches:
                     if m not in selected_topics:
                         selected_topics.append(m)
@@ -162,13 +165,13 @@ def _step_topics(df):
             if a2.button(
                 f"Continue with {len(selected_topics)} topic(s)",
                 key="confirm_topics",
-                use_container_width=True,
+                width="stretch",
             ):
                 _add_message("user", f"Topics: {summary}")
                 st.session_state.wizard_step = 3
                 st.rerun()
 
-        if a3.button("Skip — show all", key="skip_topics", use_container_width=True):
+        if a3.button("Skip — show all", key="skip_topics", width="stretch"):
             st.session_state.wizard_filters["topics"] = []
             _add_message("user", "No topic filter")
             st.session_state.wizard_step = 3
@@ -206,17 +209,17 @@ def _step_results(df):
             if c1.button(
                 f"View {count} result(s) in Explore",
                 key="goto_explore_from_wizard",
-                use_container_width=True,
+                width="stretch",
                 type="primary",
             ):
                 # Push filters to session_state for explore.py to consume
-                st.session_state.filter_types = filters["entity_type"]
-                st.session_state.filter_tags  = filters["topics"]
-                st.session_state.filter_col   = filters["collaboration"]
+                st.session_state.filter_entity_type    = filters["entity_type"]
+                st.session_state.filter_tags           = filters["topics"]
+                st.session_state.filter_open_to_collab = filters["collaboration"]
                 st.session_state.page = "Explore Database"
                 st.rerun()
 
-            if c2.button("Start over", key="restart_wizard", use_container_width=True):
+            if c2.button("Start over", key="restart_wizard", width="stretch"):
                 _reset_wizard()
                 st.rerun()
 

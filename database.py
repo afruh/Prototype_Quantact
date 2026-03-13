@@ -3,7 +3,7 @@ import streamlit as st
 
 """
 database.py
-Centralized data access layer for the Quant@ct application.
+Centralized data access layer for the QuantAct application.
 
 Responsibilities:
 - Loading and caching the Excel database
@@ -22,7 +22,7 @@ DB_PATH  = "MVP_Database_V2.xlsx"
 DB_SHEET = "Horizontal"
 
 # Separator used in multi-value text columns (Tags, Quantum_Field, etc.)
-MULTI_VALUE_SEP = "/"
+MULTI_VALUE_SEP = " / " 
 
 # Columns that contain multiple values separated by MULTI_VALUE_SEP
 MULTI_VALUE_COLS = [
@@ -39,7 +39,7 @@ MULTI_VALUE_COLS = [
 FILLNA_UNKNOWN_COLS = [
     "Open_To_Collaboration",
     "Industry_experience",
-    "TRL",
+    "Technology Readiness Level (TRL)",
 ]
 
 # -- Column registry ----------------------------------------------------------
@@ -118,7 +118,7 @@ FILTERS = [
         "label":       "Entity Type",
         "column":      "entity_type",
         "type":        "multiselect",
-        "multi_value": False,
+        "multi_value": False,        # "Academia / Facilitator" = valeur unique, pas splittee
     },
     {
         "key":         "sub_type",
@@ -132,7 +132,7 @@ FILTERS = [
         "label":       "Country / Region",
         "column":      "country",
         "type":        "multiselect",
-        "multi_value": False,
+        "multi_value": True,         # "France / USA" -> ["France", "USA"]
     },
     {
         "key":         "open_to_collab",
@@ -153,7 +153,7 @@ FILTERS = [
         "label":       "Technology Readiness Level",
         "column":      "trl",
         "type":        "multiselect",
-        "multi_value": False,
+        "multi_value": True,         # "research / experiment" -> ["research", "experiment"]
     },
     {
         "key":         "tags",
@@ -176,20 +176,16 @@ def load_data() -> pd.DataFrame:
 
 
 def _normalize(df: pd.DataFrame) -> pd.DataFrame:
-    """Clean and normalize raw DataFrame columns."""
-    # Strip whitespace from string columns
     str_cols = df.select_dtypes(include="object").columns
     df[str_cols] = df[str_cols].apply(lambda c: c.str.strip())
 
-    # Fill NaN in collaboration/experience columns
-    for c in FILLNA_UNKNOWN_COLS:
-        raw = col(c) if c in COLUMNS else c
-        if raw in df.columns:
-            df[raw] = df[raw].fillna("Unknown").astype(str)
+    # FIXED: FILLNA_UNKNOWN_COLS now contains raw column names directly
+    for raw_col in FILLNA_UNKNOWN_COLS:
+        if raw_col in df.columns:
+            df[raw_col] = df[raw_col].fillna("Unknown").astype(str)
 
-    # Fill remaining string NaN with empty string
+    str_cols = df.select_dtypes(include="object").columns
     df[str_cols] = df[str_cols].fillna("")
-
     return df
 
 

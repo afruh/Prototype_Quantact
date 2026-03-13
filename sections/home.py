@@ -1,16 +1,13 @@
 import streamlit as st
 from database import col as db_col
+import pandas as pd
 
-"""
-pages/home.py
-Hero banner, stats row, navigation cards, entity type chart.
-"""
 
 def render(df):
     # Hero banner
     st.markdown(
         '<div class="hero">'
-        "<h1>Quant@ct Hub</h1>"
+        "<h1>QuantAct Hub</h1>"
         "<p>We build bridges between academic research and industry in Geneva "
         "around the field of Quantum.<br>"
         "Discover research groups, industries, and facilitators pushing the "
@@ -21,18 +18,23 @@ def render(df):
 
     # Stats row
     total  = len(df)
-    types  = df["Entity_Type"].nunique()
+    types = len({
+        t.strip()
+        for val in df[db_col("entity_type")].dropna()
+        for t in str(val).split(" / ")
+        if t.strip()
+    })
     collab = (df[db_col("open_to_collab")].str.lower() == "yes").sum()
-    locs   = df["Location"].nunique()
+    locs   = df[db_col("country")].nunique()
 
     c1, c2, c3, c4 = st.columns(4)
-    for col, value, label in [
+    for widget_col, value, label in [
         (c1, total,  "Entities"),
         (c2, types,  "Entity Types"),
         (c3, collab, "Open to Collaboration"),
-        (c4, locs,   "Locations"),
+        (c4, locs,   "Countries / Regions"),
     ]:
-        col.markdown(
+        widget_col.markdown(
             f'<div class="stat-card"><h2>{value}</h2><p>{label}</p></div>',
             unsafe_allow_html=True,
         )
@@ -50,7 +52,7 @@ def render(df):
             "to find the right group or organisation.</p></div>",
             unsafe_allow_html=True,
         )
-        if st.button("Open", key="goto_explore", use_container_width=True):
+        if st.button("Open", key="goto_explore", width="stretch"):
             st.session_state.page = "Explore Database"
             st.rerun()
 
@@ -61,7 +63,7 @@ def render(df):
             "and find relevant entities step by step.</p></div>",
             unsafe_allow_html=True,
         )
-        if st.button("Open", key="goto_ai", use_container_width=True):
+        if st.button("Open", key="goto_ai", width="stretch"):
             st.session_state.page = "AI Assistant"
             st.rerun()
 
@@ -72,13 +74,22 @@ def render(df):
             "Use the database to reach potential collaborators.</p></div>",
             unsafe_allow_html=True,
         )
-        if st.button("Open", key="goto_explore2", use_container_width=True):
+        if st.button("Open", key="goto_explore2", width="stretch"):
             st.session_state.page = "Explore Database"
             st.rerun()
 
     # Entity type chart
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("### Entity Types in the Database")
-    tc = df["Entity_Type"].value_counts().reset_index()
+
+    # Split multi-value entity types and count each separately
+    all_types = []
+    for val in df[db_col("entity_type")].dropna():
+        for t in str(val).split(" / "):
+            t = t.strip()
+            if t:
+                all_types.append(t)
+
+    tc = pd.Series(all_types).value_counts().reset_index()
     tc.columns = ["Type", "Count"]
     st.bar_chart(tc.set_index("Type"))

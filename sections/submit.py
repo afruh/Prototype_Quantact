@@ -119,7 +119,7 @@ def render():
 
         submitted = st.form_submit_button(
             "Submit",
-            use_container_width=True,
+            width="stretch",
             type="primary",
         )
 

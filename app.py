@@ -5,6 +5,12 @@ from database import load_data
 from sections import home, explore, assistant, about, submit
 
 # -- Page config --------------------------------------------------------------
+st.set_page_config(
+    page_title="QuantAct",
+    page_icon="quantact",
+    layout="wide",
+)
+
 nav_items = {
     "Home":             "Home",
     "Explore Database": "Explore Database",
@@ -24,7 +30,7 @@ df = load_data()
 
 # -- Sidebar ------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("## Quant@ct")
+    st.markdown("## QuantAct")
     st.markdown("---")
 
     if "page" not in st.session_state:
@@ -36,7 +42,7 @@ with st.sidebar:
         if st.button(
             label,
             key=f"nav_{key}",
-            use_container_width=True,
+            width="stretch",
             type="primary" if is_active else "secondary",
         ):
             st.session_state.page = key
