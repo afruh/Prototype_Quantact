@@ -1,0 +1,22 @@
+# QuantAct — Dépendances NLP optionnelles
+# ==========================================
+# Ces packages ne sont PAS nécessaires pour faire tourner l'application.
+# Ils activent le mode NLP réel dans "Find Me Partners".
+#
+# Installation :
+#   pip install -r requirements_nlp.txt
+#
+# Compatibilité : Python 3.9+, CPU uniquement (pas de GPU requis)
+
+# Moteur d'embeddings sémantiques (~22 MB pour le modèle all-MiniLM-L6-v2)
+# Téléchargement automatique du modèle au premier lancement (~30s)
+sentence-transformers>=2.7.0
+
+# Extraction de mots-clés (RAKE - Rapid Automatic Keyword Extraction)
+rake-nltk>=1.0.6
+
+# Matching flou — déjà utilisé par assistant.py, inclus ici pour clarté
+rapidfuzz>=3.0.0
+
+# NLTK data (téléchargé automatiquement par nlp_matcher.py au premier run)
+# nltk>=3.8  # dépendance de rake-nltk, installée automatiquement

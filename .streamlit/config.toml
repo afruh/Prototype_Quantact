@@ -1,0 +1,11 @@
+# .streamlit/config.toml
+# ─────────────────────────────────────────────────────────────
+# Passe le file-watcher en mode "poll" pour éviter que Streamlit
+# inspecte les internals de transformers/torchvision et génère
+# des tracebacks dans la console.
+# Le hot-reload fonctionne toujours — seule la méthode de
+# détection change (sondage périodique au lieu de watchdog).
+# ─────────────────────────────────────────────────────────────
+
+[server]
+fileWatcherType = "poll"
