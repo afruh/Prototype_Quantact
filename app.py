@@ -5,8 +5,8 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 from database import load_data
-from sections import home, explore, assistant, about, submit
-from sections import find_partners, ecosystem_explorer, partner_journey
+from sections import ecosystem_explorer_old, home, explore, assistant, about, submit
+from sections import find_partners, partner_journey
 
 # -- Page config ---------------------------------------------------------------
 st.set_page_config(
@@ -53,7 +53,7 @@ with st.sidebar:
     # ── DISCOVER ──────────────────────────────────────────────────────────────
     st.markdown('<p class="nav-section-label">DISCOVER</p>', unsafe_allow_html=True)
     nav_btn("Explore Ecosystem", "Explore Ecosystem")
-    nav_btn("Find Me Partners",  "Find Me Partners")
+    nav_btn("Find My Partners",  "Find My Partners")
     nav_btn("Partner's Journey", "Partner's Journey")
 
     # ── TOOLS ─────────────────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ if page == "Home":
 elif page == "Find My Partners":
     find_partners.render(df)
 elif page == "Explore Ecosystem":
-    ecosystem_explorer.render(df)
+    ecosystem_explorer_old.render(df)
 elif page == "Partner's Journey":
     partner_journey.render(df)
 elif page == "AI Assistant":
@@ -113,4 +113,4 @@ elif page == "About Us":
     about.render()
 # Fallback: keeps old "Explore Database" route working if referenced anywhere
 elif page == "Explore Database":
-    ecosystem_explorer.render(df)
+    ecosystem_explorer_old.render(df)

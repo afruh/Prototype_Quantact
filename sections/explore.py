@@ -60,8 +60,8 @@ def _build_entity_card(row):
 
     # TRL badge
     trl_badge = (
-        f'<span style="background:#1a2a4a;color:#7eb8f7;border-radius:20px;'
-        f'padding:2px 10px;font-size:0.8rem">TRL: {trl}</span>'
+        f'<span style="background:transparent;color:#9B8EC4;border:1px solid #7C6FA0;'
+        f'border-radius:20px;padding:2px 10px;font-size:0.8rem">TRL: {trl}</span>'
         if trl else ""
     )
 

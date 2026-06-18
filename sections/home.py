@@ -64,7 +64,7 @@ def render(df):
             unsafe_allow_html=True,
         )
         if st.button("Open", key="goto_ai", width="stretch"):
-            st.session_state.page = "Find Me Partners"
+            st.session_state.page = "Find My Partners"
             st.rerun()
 
     with card3:
