@@ -48,22 +48,22 @@ with st.sidebar:
 
     # ── PLATFORM ──────────────────────────────────────────────────────────────
     st.markdown('<p class="nav-section-label">PLATFORM</p>', unsafe_allow_html=True)
-    nav_btn("Home", "Home", "🏠")
+    nav_btn("Home", "Home")
 
     # ── DISCOVER ──────────────────────────────────────────────────────────────
     st.markdown('<p class="nav-section-label">DISCOVER</p>', unsafe_allow_html=True)
-    nav_btn("Explore Ecosystem", "Explore Ecosystem", "🌐")
-    nav_btn("Find Me Partners",  "Find Me Partners",  "🔍")
-    nav_btn("Partner's Journey", "Partner's Journey", "🗺️")
+    nav_btn("Explore Ecosystem", "Explore Ecosystem")
+    nav_btn("Find Me Partners",  "Find Me Partners")
+    nav_btn("Partner's Journey", "Partner's Journey")
 
     # ── TOOLS ─────────────────────────────────────────────────────────────────
     st.markdown('<p class="nav-section-label">TOOLS</p>', unsafe_allow_html=True)
-    nav_btn("AI Assistant",    "AI Assistant",    "🤖")
-    nav_btn("Submit an Entry", "Submit an Entry", "✏️")
+    nav_btn("AI Assistant",    "AI Assistant")
+    nav_btn("Submit an Entry", "Submit an Entry")
 
     # ── ABOUT ─────────────────────────────────────────────────────────────────
     st.markdown('<p class="nav-section-label">ABOUT</p>', unsafe_allow_html=True)
-    nav_btn("About Us", "About Us", "ℹ️")
+    nav_btn("About Us", "About Us")
 
     # Social icons
     st.markdown("<br>" * 6, unsafe_allow_html=True)
@@ -99,7 +99,7 @@ page = st.session_state.page
 
 if page == "Home":
     home.render(df)
-elif page == "Find Me Partners":
+elif page == "Find My Partners":
     find_partners.render(df)
 elif page == "Explore Ecosystem":
     ecosystem_explorer.render(df)

@@ -1,14 +1,14 @@
 """
 sections/find_partners.py
 ──────────────────────────
-Page "Find Me Partners" — deux modes :
+Page "Find My Partners" — two modes:
 
-  🧠 NLP Mode  : NLPMatcher disponible → résultats réels de la BD
-                 avec score sémantique, filtres extraits automatiquement
-  📋 Demo Mode : fallback mock-data si nlp_matcher n'est pas installé
+  🧠 NLP Mode  : NLPMatcher available → real database results
+                 with semantic scoring, filters extracted automatically
+  📋 Demo Mode : mock-data fallback if nlp_matcher is not installed
 
-La sélection du mode est automatique (basée sur la disponibilité des deps)
-avec un toggle manuel dans l'UI.
+Mode selection is automatic (based on dependency availability)
+with a manual toggle in the UI.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from __future__ import annotations
 import streamlit as st
 import pandas as pd
 
-# ── Import optionnel du moteur NLP ────────────────────────────────────────────
+# ── Optional NLP engine import ────────────────────────────────────────────────
 try:
     from nlp_matcher import NLPMatcher, NLP_AVAILABLE as _NLP_MODULE_OK
     _NLP_IMPORT_OK = True
@@ -24,7 +24,7 @@ except ImportError:
     _NLP_IMPORT_OK = False
     _NLP_MODULE_OK = False
 
-# ── Card builder depuis ecosystem_explorer ────────────────────────────────────
+# ── Card builder from ecosystem_explorer ─────────────────────────────────────
 try:
     from sections.ecosystem_explorer import _build_entity_card, _safe, _tag_html
     _CARD_IMPORT_OK = True
@@ -35,7 +35,7 @@ from database import col as db_col
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  MOCK DATA — utilisé en mode démo si nlp_matcher n'est pas disponible
+#  MOCK DATA — used in demo mode if nlp_matcher is not installed
 # ════════════════════════════════════════════════════════════════════════════════
 
 MOCK_RESEARCH = [
@@ -44,7 +44,7 @@ MOCK_RESEARCH = [
         "affiliation": "University of Geneva",
         "tags": ["Quantum Optics", "Photonic Sensing", "Quantum Communication"],
         "trl": "TRL 3–5",
-        "description": "Spécialise dans les interactions lumière-matière quantiques, applicable aux capteurs ultra-précis pour les dispositifs de surveillance biométrique et médicale.",
+        "description": "Specialises in quantum light-matter interactions, applicable to ultra-precise sensors for biometric and medical monitoring devices.",
         "score": 95, "collab": True, "contact": "photonics@unige.ch",
     },
     {
@@ -52,7 +52,7 @@ MOCK_RESEARCH = [
         "affiliation": "EPFL Lausanne",
         "tags": ["Quantum Sensors", "MEMS Integration", "Signal Processing"],
         "trl": "TRL 4–6",
-        "description": "Recherche appliquée en capteurs quantiques reliant la physique fondamentale au matériel miniaturisé pour l'électronique grand public et les IoT de santé.",
+        "description": "Applied research in quantum sensors bridging fundamental physics and miniaturised hardware for consumer electronics and health IoT.",
         "score": 88, "collab": True, "contact": "sensing@epfl.ch",
     },
     {
@@ -60,7 +60,7 @@ MOCK_RESEARCH = [
         "affiliation": "Paul Scherrer Institute",
         "tags": ["Quantum Materials", "Coherence", "Low-Temperature Physics"],
         "trl": "TRL 2–4",
-        "description": "Recherche fondamentale sur la cohérence quantique dans de nouveaux matériaux, avec intérêt croissant pour les applications réelles de détection.",
+        "description": "Fundamental research on quantum coherence in novel materials, with growing interest in real-world sensing applications.",
         "score": 71, "collab": False, "contact": "qmaterials@psi.ch",
     },
 ]
@@ -71,7 +71,7 @@ MOCK_STARTUPS = [
         "stage": "Seed",
         "tags": ["Quantum Software", "Algorithm SDK", "Hardware Integration"],
         "trl": "TRL 5–7",
-        "description": "Middleware d'algorithmes quantiques pour déploiement matériel, spécialisé dans le traitement des données de capteurs au niveau de la couche quantique.",
+        "description": "Quantum algorithm middleware for hardware deployment, specialised in sensor data processing at the quantum layer.",
         "score": 91, "collab": True, "contact": "partnerships@quantumpath.ch",
     },
     {
@@ -79,7 +79,7 @@ MOCK_STARTUPS = [
         "stage": "Pre-Seed",
         "tags": ["Biometric Sensing", "Edge AI", "Wearable IoT"],
         "trl": "TRL 4–6",
-        "description": "Combine les sorties de capteurs quantiques avec l'IA embarquée pour la surveillance biométrique en temps réel dans les appareils portables grand public.",
+        "description": "Combines quantum sensor outputs with embedded AI for real-time biometric monitoring in consumer wearables.",
         "score": 84, "collab": True, "contact": "hello@qsense.io",
     },
 ]
@@ -89,29 +89,29 @@ MOCK_FACILITATORS = [
         "name": "Innosuisse – Swiss Innovation Agency",
         "role": "Funding",
         "tags": ["R&D Grants", "Partnership Co-funding", "IP Strategy"],
-        "description": "Agence fédérale d'innovation suisse offrant des subventions et co-financements pour les partenariats R&D academia-industrie en deep tech.",
+        "description": "Swiss federal innovation agency providing grants and co-funding for academia-industry R&D partnerships in deep tech.",
         "score": 90, "contact": "contact@innosuisse.ch",
     },
     {
         "name": "Geneva Quantum Hub",
         "role": "Network / Incubation",
         "tags": ["Ecosystem Facilitation", "Introductions", "Events"],
-        "description": "Connecte startups quantiques, groupes de recherche et industrie dans l'écosystème genevois. Événements bi-annuels de matchmaking.",
+        "description": "Connects quantum startups, research groups, and industry in the Geneva ecosystem. Bi-annual matchmaking events.",
         "score": 85, "contact": "hub@genevatech.ch",
     },
 ]
 
 REFINEMENT_LINES = [
-    ("Domaine",          "Capteurs quantiques pour monitoring biométrique (contexte wearable / santé)"),
-    ("Besoin clé",       "Intégration de capteurs au niveau quantique + expertise traitement du signal"),
-    ("TRL idéal",        "Recherche (TRL 2–5) pour groupes académiques · Exécution (TRL 4–7) pour startups"),
-    ("Contraintes",      "Capacité de miniaturisation · Design basse consommation · Expérience industrie"),
-    ("Recherche",        "Groupes de recherche (science core) + Startups (exécution) + Facilitateurs (IP/financement)"),
+    ("Domain",        "Quantum sensors for biometric monitoring (wearable / health context)"),
+    ("Core need",     "Quantum-level sensor integration + signal processing expertise"),
+    ("Ideal TRL",     "Research (TRL 2–5) for academic groups · Execution (TRL 4–7) for startups"),
+    ("Constraints",   "Miniaturisation capacity · Low-power design · Industry experience"),
+    ("Approach",      "Research groups (core science) + Startups (execution) + Facilitators (IP/funding)"),
 ]
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  HELPERS COMMUNS
+#  SHARED HELPERS
 # ════════════════════════════════════════════════════════════════════════════════
 
 def _score_class(score: int) -> str:
@@ -135,13 +135,13 @@ def _section_header(icon: str, icon_cls: str, title: str, count: int) -> str:
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  MODE DÉMO — affichage mock data
+#  DEMO MODE — mock data display
 # ════════════════════════════════════════════════════════════════════════════════
 
 def _show_refinement_mock(query: str) -> None:
     st.markdown(
         f'<div class="refinement-box">'
-        f'<strong>🤖 Consultant Parser · Requête analysée</strong><br><br>'
+        f'<strong>🤖 Consultant Parser · Query analyzed</strong><br><br>'
         + "".join(
             f'<span style="color:var(--t4);font-size:0.82rem">{k}&nbsp;&nbsp;</span>'
             f'<span style="color:var(--t2);font-size:0.88rem">{v}</span><br>'
@@ -156,7 +156,7 @@ def _show_mock_results(query: str) -> None:
     _show_refinement_mock(query)
     st.markdown(
         '<div style="display:flex;align-items:center;gap:10px;margin:8px 0 24px">'
-        '<span style="color:var(--t4);font-size:0.88rem">Shortlist prête ·</span>'
+        '<span style="color:var(--t4);font-size:0.88rem">Shortlist ready ·</span>'
         '<span style="color:var(--ok);font-size:0.88rem;font-weight:600">'
         "3 research groups &nbsp;·&nbsp; 2 startups &nbsp;·&nbsp; 2 facilitators"
         "</span></div>",
@@ -235,25 +235,25 @@ def _show_mock_results(query: str) -> None:
     # Export CTA
     st.markdown(
         '<div class="export-card"><strong>📦 Export Partner Pack</strong>'
-        "Génère un résumé structuré de tous les collaborateurs présélectionnés, "
-        "prêt à partager avec votre équipe.</div>",
+        "Generates a structured summary of all shortlisted collaborators, "
+        "ready to share with your team.</div>",
         unsafe_allow_html=True,
     )
     c1, c2, _ = st.columns([1, 1, 2])
     c1.button("📤 Export Partner Pack", disabled=True, width="stretch", key="mock_export")
-    if c2.button("🔄 Nouvelle recherche", width="stretch", key="mock_reset"):
+    if c2.button("🔄 New search", width="stretch", key="mock_reset"):
         st.session_state.fmp_show_results = False
         st.session_state.fmp_query = ""
         st.rerun()
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-#  MODE NLP — affichage résultats réels
+#  NLP MODE — real database results
 # ════════════════════════════════════════════════════════════════════════════════
 
 @st.cache_resource
 def _load_matcher_cached():
-    """Charge NLPMatcher une seule fois pour toute la session Streamlit."""
+    """Load NLPMatcher once for the entire Streamlit session."""
     from database import load_data
     from nlp_matcher import NLPMatcher
     df = load_data()
@@ -261,35 +261,35 @@ def _load_matcher_cached():
 
 
 def _show_nlp_refinement(explanation: dict) -> None:
-    """Affiche la box 'Consultant Parser' avec les vrais filtres détectés."""
+    """Display the 'Consultant Parser' box with the real detected filters."""
     lines: list[tuple[str, str]] = []
 
     if explanation.get("entity_types"):
-        lines.append(("Types détectés", ", ".join(explanation["entity_types"])))
+        lines.append(("Detected types", ", ".join(explanation["entity_types"])))
     if explanation.get("tags"):
-        lines.append(("Tags extraits", ", ".join(explanation["tags"])))
+        lines.append(("Extracted tags", ", ".join(explanation["tags"])))
     if explanation.get("quantum_fields"):
-        lines.append(("Champs quantiques", ", ".join(explanation["quantum_fields"])))
+        lines.append(("Quantum fields", ", ".join(explanation["quantum_fields"])))
     if explanation.get("trl"):
-        lines.append(("TRL inféré", ", ".join(explanation["trl"])))
+        lines.append(("Inferred TRL", ", ".join(explanation["trl"])))
     if explanation.get("collab"):
-        lines.append(("Collaboration", "Ouvert à la collaboration"))
+        lines.append(("Collaboration", "Open to collaboration"))
     if explanation.get("country"):
-        lines.append(("Région", ", ".join(explanation["country"])))
+        lines.append(("Region", ", ".join(explanation["country"])))
 
     mode_label = (
-        f'Semantic NLP · modèle `{explanation["model"]}`'
+        f'Semantic NLP · model `{explanation["model"]}`'
         if explanation["mode"] == "semantic"
-        else "Keyword matching (installez sentence-transformers pour le mode sémantique)"
+        else "Keyword matching (install sentence-transformers for semantic mode)"
     )
-    lines.append(("Méthode", mode_label))
+    lines.append(("Method", mode_label))
 
     if explanation.get("relaxed"):
-        lines.append(("ℹ️ Note", "Filtres relâchés — peu de résultats stricts, résultats sémantiques utilisés"))
+        lines.append(("ℹ️ Note", "Filters relaxed — few strict matches; semantic results used instead"))
 
     st.markdown(
         '<div class="refinement-box">'
-        "<strong>🧠 NLP Parser · Analyse de la requête</strong><br><br>"
+        "<strong>🧠 NLP Parser · Query analysis</strong><br><br>"
         + "".join(
             f'<span style="color:var(--t4);font-size:0.82rem">{k}&nbsp;&nbsp;</span>'
             f'<span style="color:var(--t2);font-size:0.88rem">{v}</span><br>'
@@ -301,7 +301,7 @@ def _show_nlp_refinement(explanation: dict) -> None:
 
 
 def _icon_for_type(entity_type: str) -> tuple[str, str]:
-    """Retourne (emoji, css_class) selon le type d'entité."""
+    """Return (emoji, css_class) for a given entity type string."""
     t = entity_type.lower()
     if "acad" in t or "research" in t or "univers" in t:
         return "🔬", "icon-research"
@@ -323,39 +323,39 @@ def _show_nlp_results(
     explanation: dict,
     query: str,
 ) -> None:
-    """Affiche les résultats réels de la BD avec scores NLP, groupés par type."""
+    """Display real database results with NLP scores, grouped by entity type."""
 
     _show_nlp_refinement(explanation)
 
     if result_df.empty:
         st.warning(
-            "Aucun résultat trouvé pour cette requête. "
-            "Essayez des termes plus généraux ou passez en mode Explore Ecosystem."
+            "No results found for this query. "
+            "Try broader terms or switch to Explore Ecosystem."
         )
-        if st.button("🌐 Ouvrir Explore Ecosystem", key="nlp_goto_explore"):
+        if st.button("🌐 Open Explore Ecosystem", key="nlp_goto_explore"):
             st.session_state.page = "Explore Ecosystem"
             st.rerun()
         return
 
-    # Résumé
+    # Summary
     type_col = db_col("entity_type")
     n = len(result_df)
     st.markdown(
         f'<div style="display:flex;align-items:center;gap:10px;margin:8px 0 24px">'
-        f'<span style="color:var(--t4);font-size:0.88rem">Résultats ·</span>'
+        f'<span style="color:var(--t4);font-size:0.88rem">Results ·</span>'
         f'<span style="color:var(--ok);font-size:0.88rem;font-weight:600">'
-        f"{n} entité(s) correspondantes depuis la base de données"
+        f"{n} matching entities from the database"
         f"</span></div>",
         unsafe_allow_html=True,
     )
 
-    # Groupement par type d'entité
+    # Group by entity type
     if type_col in result_df.columns:
         groups = result_df.groupby(type_col, sort=False)
         ordered_types = result_df[type_col].unique().tolist()
     else:
-        groups = {"Entités": result_df}.items()
-        ordered_types = ["Entités"]
+        groups = {"Entities": result_df}.items()
+        ordered_types = ["Entities"]
 
     for etype in ordered_types:
         try:
@@ -373,10 +373,10 @@ def _show_nlp_results(
             score = int(row.get("_match_pct", 70))
             score_html = _nlp_score_badge(score)
 
-            # Utilise le card builder partagé si disponible, sinon version allégée
+            # Use shared card builder if available, otherwise use lightweight fallback
             if _CARD_IMPORT_OK:
                 card_html = _build_entity_card(row)
-                # Injecte le badge score dans le card header
+                # Inject score badge into card header
                 card_html = card_html.replace(
                     '<div class="entity-card">',
                     f'<div class="match-card">',
@@ -386,7 +386,7 @@ def _show_nlp_results(
                     f'<div style="position:absolute;top:18px;right:18px">{score_html}</div>',
                     1,
                 )
-                # Wrap en position:relative pour le badge
+                # Wrap in position:relative for the badge
                 card_html = card_html.replace(
                     '<div class="match-card">',
                     '<div class="match-card" style="position:relative">',
@@ -427,12 +427,12 @@ def _show_nlp_results(
                     unsafe_allow_html=True,
                 )
 
-    # Boutons CTA
+    # CTA buttons
     st.markdown("<br>", unsafe_allow_html=True)
     c1, c2, c3, _ = st.columns([1.2, 1.2, 1, 1.5])
 
-    if c1.button("🌐 Voir dans Ecosystem", width="stretch", key="nlp_goto_eco", type="primary"):
-        # Pré-remplit les filtres dans Explore Ecosystem
+    if c1.button("🌐 View in Ecosystem", width="stretch", key="nlp_goto_eco", type="primary"):
+        # Pre-fill filters in Explore Ecosystem
         active = {k: v for k, v in filters.items() if v}
         for k, v in active.items():
             st.session_state[f"filter_{k}"] = v
@@ -441,7 +441,7 @@ def _show_nlp_results(
 
     c2.button("📤 Export Partner Pack", disabled=True, width="stretch", key="nlp_export")
 
-    if c3.button("🔄 Nouvelle recherche", width="stretch", key="nlp_reset"):
+    if c3.button("🔄 New search", width="stretch", key="nlp_reset"):
         st.session_state.fmp_show_results = False
         st.session_state.fmp_query = ""
         st.rerun()
@@ -453,10 +453,10 @@ def _show_nlp_results(
 
 def render(df: pd.DataFrame) -> None:
     st.markdown(
-        '<div class="page-header"><h2>🔍 Find Me Partners</h2>'
+        '<div class="page-header"><h2> Find My Partners</h2>'
         '<p class="page-subtitle">'
-        "Décrivez votre projet ou défi technologique. La plateforme surface les "
-        "groupes de recherche, startups et facilitateurs les plus pertinents."
+        "Describe your project or technology challenge to find matching "
+        "research groups, startups, and facilitators."
         "</p></div>",
         unsafe_allow_html=True,
     )
@@ -465,15 +465,15 @@ def render(df: pd.DataFrame) -> None:
     if _NLP_IMPORT_OK:
         st.markdown(
             '<div class="demo-banner">'
-            "🧠 <strong>Mode NLP disponible</strong> — résultats issus de la vraie base de données."
+            "🧠 <strong>NLP mode active</strong> — results from the real database."
             "</div>",
             unsafe_allow_html=True,
         )
     else:
         st.markdown(
             '<div class="demo-banner">'
-            "📋 <strong>Mode démo</strong> — installez <code>sentence-transformers</code> "
-            "et <code>rake-nltk</code> (requirements_nlp.txt) pour activer le NLP réel."
+            "📋 <strong>Demo mode</strong> — install <code>sentence-transformers</code> "
+            "and <code>rake-nltk</code> (requirements_nlp.txt) to activate real NLP."
             "</div>",
             unsafe_allow_html=True,
         )
@@ -486,33 +486,33 @@ def render(df: pd.DataFrame) -> None:
     if "fmp_use_nlp" not in st.session_state:
         st.session_state.fmp_use_nlp = _NLP_IMPORT_OK
 
-    # ── ÉTAPE 1 : Saisie ─────────────────────────────────────────────────────
+    # ── STEP 1 : Input ───────────────────────────────────────────────────────
     if not st.session_state.fmp_show_results:
 
         # Toggle NLP / Demo
         if _NLP_IMPORT_OK:
             col_toggle, _ = st.columns([2, 3])
             st.session_state.fmp_use_nlp = col_toggle.toggle(
-                "🧠 Utiliser le NLP (données réelles)",
+                "🧠 Use NLP (real data)",
                 value=st.session_state.fmp_use_nlp,
                 key="fmp_nlp_toggle",
             )
 
-        st.markdown('<div class="fmp-input-box"><h3>Décrivez votre besoin</h3>', unsafe_allow_html=True)
+        st.markdown('<div class="fmp-input-box"><h3>Describe your need</h3>', unsafe_allow_html=True)
 
         examples = [
             "Smartwatch powered by quantum sensors for biometric monitoring",
             "Quantum communication for secure industrial data transfer",
             "Quantum computing partner for drug discovery optimization",
         ]
-        st.caption("Exemples :")
+        st.caption("Examples:")
         ex_cols = st.columns(len(examples))
         for col_w, ex in zip(ex_cols, examples):
             if col_w.button(ex, key=f"ex_{ex[:18]}", width="stretch"):
                 st.session_state.fmp_query = ex
 
         query = st.text_area(
-            "Votre projet",
+            "Your project",
             value=st.session_state.fmp_query,
             height=110,
             placeholder=(
@@ -526,24 +526,24 @@ def render(df: pd.DataFrame) -> None:
         st.markdown("</div>", unsafe_allow_html=True)
 
         c1, c2, _ = st.columns([1.3, 1, 2.7])
-        go = c1.button("🔍 Trouver des partenaires", type="primary", width="stretch", key="fmp_go")
-        if c2.button("Effacer", width="stretch", key="fmp_clear"):
+        go = c1.button("🔍 Find Partners", type="primary", width="stretch", key="fmp_go")
+        if c2.button("Clear", width="stretch", key="fmp_clear"):
             st.session_state.fmp_query = ""
             st.rerun()
 
         if go:
             if not query.strip():
-                st.warning("Veuillez décrire votre projet avant de lancer la recherche.")
+                st.warning("Please describe your project before searching.")
             else:
                 use_nlp = st.session_state.get("fmp_use_nlp", False)
-                label   = "Analyse NLP en cours…" if use_nlp else "Simulation en cours…"
+                label   = "Running NLP analysis…" if use_nlp else "Running simulation…"
                 with st.spinner(label):
                     if use_nlp and _NLP_IMPORT_OK:
-                        # Pré-charge le matcher (mis en cache par @st.cache_resource)
+                        # Pre-load matcher (cached via @st.cache_resource)
                         try:
                             _load_matcher_cached()
                         except Exception as e:
-                            st.error(f"Erreur NLP : {e}")
+                            st.error(f"NLP error: {e}")
                             return
                     else:
                         import time; time.sleep(1.0)
@@ -551,36 +551,36 @@ def render(df: pd.DataFrame) -> None:
                 st.session_state.fmp_show_results = True
                 st.rerun()
 
-        with st.expander("💡 Conseils pour de meilleurs résultats"):
+        with st.expander("💡 Tips for better results"):
             st.markdown(
                 """
-                - **Soyez spécifique** : mentionnez le domaine d'application, le type de technologie, le contexte d'intégration.
-                - **Incluez les contraintes** : limitations matérielles, budget, calendrier, préférence géographique.
-                - **Décrivez ce que vous apportez** : votre expertise, IP ou infrastructure aide le moteur à calibrer.
-                - **Précisez votre stade** : exploration précoce vs intégration prête à déployer.
+                - **Be specific**: mention the application domain, technology type, and integration context.
+                - **Include constraints**: hardware limits, budget, timeline, geographic preference.
+                - **Describe what you bring**: your expertise, IP, or infrastructure helps calibrate the results.
+                - **Specify your stage**: early exploration vs. deployment-ready integration.
                 """
             )
 
-    # ── ÉTAPE 2 : Résultats ───────────────────────────────────────────────────
+    # ── STEP 2 : Results ─────────────────────────────────────────────────────
     else:
         query = st.session_state.fmp_query
         query_display = query[:90] + ("…" if len(query) > 90 else "")
         st.markdown(
             f'<div style="background:oklch(0.57 0.22 303 / 0.07);border-radius:8px;'
             f'padding:10px 16px;margin-bottom:16px;font-size:0.88rem;color:var(--t3)">'
-            f'<strong style="color:var(--a300)">Requête :</strong> {query_display}</div>',
+            f'<strong style="color:var(--a300)">Query:</strong> {query_display}</div>',
             unsafe_allow_html=True,
         )
 
         use_nlp = st.session_state.get("fmp_use_nlp", False) and _NLP_IMPORT_OK
 
         if use_nlp:
-            with st.spinner("Recherche sémantique en cours…"):
+            with st.spinner("Running semantic search…"):
                 try:
                     matcher = _load_matcher_cached()
                     result_df, filters, explanation = matcher.match(query, top_k=12)
                 except Exception as e:
-                    st.error(f"Erreur NLP : {e}. Basculement en mode démo.")
+                    st.error(f"NLP error: {e}. Falling back to demo mode.")
                     _show_mock_results(query)
                     return
             _show_nlp_results(result_df, filters, explanation, query)

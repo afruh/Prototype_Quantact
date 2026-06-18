@@ -7,7 +7,7 @@ def render(df):
     # Hero banner
     st.markdown(
         '<div class="hero">'
-        "<h1>QuantAct Hub</h1>"
+        "<h1>QuantAct Plateform</h1>"
         "<p>We build bridges between academic research and industry in Geneva "
         "around the field of Quantum.<br>"
         "Discover research groups, industries, and facilitators pushing the "
@@ -47,35 +47,35 @@ def render(df):
 
     with card1:
         st.markdown(
-            '<div class="nav-card"><h3>Explore Database</h3>'
-            "<p>Filter by type, location, tags, and collaboration status "
-            "to find the right group or organisation.</p></div>",
+            '<div class="nav-card"><h3>Explore the Ecosystem</h3>'
+            "<p>Filter by topic, actor type, and geography to browse "
+            "research groups, startups, companies, and facilitators.</p></div>",
             unsafe_allow_html=True,
         )
         if st.button("Open", key="goto_explore", width="stretch"):
-            st.session_state.page = "Explore Database"
+            st.session_state.page = "Explore Ecosystem"
             st.rerun()
 
     with card2:
         st.markdown(
-            '<div class="nav-card"><h3>AI Assistant</h3>'
-            "<p>Use the guided assistant to navigate the database "
-            "and find relevant entities step by step.</p></div>",
+            '<div class="nav-card"><h3>Find My Partners</h3>'
+            "<p>Describe your project and get a shortlist of research groups, "
+            "startups, and facilitators matched to your need.</p></div>",
             unsafe_allow_html=True,
         )
         if st.button("Open", key="goto_ai", width="stretch"):
-            st.session_state.page = "AI Assistant"
+            st.session_state.page = "Find Me Partners"
             st.rerun()
 
     with card3:
         st.markdown(
-            '<div class="nav-card"><h3>Get in Touch</h3>'
-            "<p>Every entity card includes a direct contact email. "
-            "Use the database to reach potential collaborators.</p></div>",
+            '<div class="nav-card"><h3>Partner\'s Journey</h3>'
+            "<p>See the full collaboration flow: from first search "
+            "to introduction request and partner pack export.</p></div>",
             unsafe_allow_html=True,
         )
-        if st.button("Open", key="goto_explore2", width="stretch"):
-            st.session_state.page = "Explore Database"
+        if st.button("Open", key="goto_journey", width="stretch"):
+            st.session_state.page = "Partner's Journey"
             st.rerun()
 
     # Entity type chart
