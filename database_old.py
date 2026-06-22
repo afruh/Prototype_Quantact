@@ -3,7 +3,6 @@ import streamlit as st
 
 """
 database.py
-
 Centralized data access layer for the QuantAct application.
 
 Responsibilities:
@@ -19,11 +18,11 @@ needs to change — the rest of the application remains untouched.
 
 # -- Configuration ------------------------------------------------------------
 
-DB_PATH   = "MVP_Database_V2.xlsx"
-DB_SHEET  = "Horizontal"
+DB_PATH  = "MVP_Database_V2.xlsx"
+DB_SHEET = "Horizontal"
 
 # Separator used in multi-value text columns (Tags, Quantum_Field, etc.)
-MULTI_VALUE_SEP = " / "
+MULTI_VALUE_SEP = " / " 
 
 # Columns that contain multiple values separated by MULTI_VALUE_SEP
 MULTI_VALUE_COLS = [
@@ -44,51 +43,56 @@ FILLNA_UNKNOWN_COLS = [
 ]
 
 # -- Column registry ----------------------------------------------------------
-
 # Maps internal column name -> display label shown in the UI.
 # Add or rename entries here to update the entire app at once.
+
 COLUMNS = {
     # Identity
-    "entity_id":    "Entity_ID",
-    "name":         "Entity_Name",
-    "entity_type":  "Entity_Type",
-    "sub_type":     "Sub_Type",
-    "affiliation":  "Affiliation",
-    "country":      "Country / Region",
-    "one_liner":    "One liner",
+    "entity_id":        "Entity_ID",
+    "name":             "Entity_Name",
+    "entity_type":      "Entity_Type",
+    "sub_type":         "Sub_Type",
+    "affiliation":      "Affiliation",
+    "country":          "Country / Region",
+    "one_liner":        "One liner",
+
     # Tags & topics
-    "tags":         "Tags",
-    "quantum_field":"Quantum_Field",
-    "tech_focus":   "Technology_Focus",
-    "trl":          "Technology Readiness Level (TRL)",
-    "core_expertise":"Core_Expertise",
-    "secondary_exp":"Secondary_Expertise",
+    "tags":             "Tags",
+    "quantum_field":    "Quantum_Field",
+    "tech_focus":       "Technology_Focus",
+    "trl":              "Technology Readiness Level (TRL)",
+    "core_expertise":   "Core_Expertise",
+    "secondary_exp":    "Secondary_Expertise",
+
     # Outputs
-    "primary_output":"Primary_Output",
-    "publications": "Key_Publications",
-    "patents":      "Key_Patents",
-    "flagship":     "Flagship_Technology",
+    "primary_output":   "Primary_Output",
+    "publications":     "Key_Publications",
+    "patents":          "Key_Patents",
+    "flagship":         "Flagship_Technology",
+
     # Collaboration
-    "open_to_collab":"Open_To_Collaboration",
-    "industry_exp": "Industry_experience",
-    "looking_for":  "Looking_For",
-    "offers":       "Offers",
+    "open_to_collab":   "Open_To_Collaboration",
+    "industry_exp":     "Industry_experience",
+    "looking_for":      "Looking_For",
+    "offers":           "Offers",
     "previous_partners":"Previous_Partners",
+
     # Business
-    "funding_stage":"Funding_Stage",
-    "acad_ind_fit": "Academia_Industry_Fit",
-    "commercial":   "Commercial_Potential",
-    "innovation":   "Innovation_Depth",
-    "ecosystem":    "Ecosystem_Influence",
-    "role":         "Role",
-    "decision_maker":"Decision_Maker",
-    "hardware_access":"Hardware_Access",
-    "scalability":  "Scalability_Constraint",
+    "funding_stage":    "Funding_Stage",
+    "acad_ind_fit":     "Academia_Industry_Fit",
+    "commercial":       "Commercial_Potential",
+    "innovation":       "Innovation_Depth",
+    "ecosystem":        "Ecosystem_Influence",
+    "role":             "Role",
+    "decision_maker":   "Decision_Maker",
+    "hardware_access":  "Hardware_Access",
+    "scalability":      "Scalability_Constraint",
+
     # Contact
-    "website":      "Website",
-    "email":        "Email",
-    "contact_name": "Contact_Name",
-    "linkedin":     "LinkedIn",
+    "website":          "Website",
+    "email":            "Email",
+    "contact_name":     "Contact_Name",
+    "linkedin":         "LinkedIn",
 }
 
 # Shorthand accessor — use col("name") instead of COLUMNS["name"] in code
@@ -96,17 +100,17 @@ def col(key: str) -> str:
     """Return the raw DataFrame column name for a given registry key."""
     return COLUMNS[key]
 
-# -- Filter definitions -------------------------------------------------------
 
+# -- Filter definitions -------------------------------------------------------
 # Each filter entry defines one UI widget on the Explore page.
 # Add a new dict here to add a new filter — no other file needs to change.
 #
 # Keys:
-#   key        : unique identifier (used in session_state)
-#   label      : displayed in the UI
-#   column     : col() key from the registry above
-#   type       : "multiselect" | "select" | "toggle"
-#   multi_value: True if the column contains "/" separated values
+#   key          : unique identifier (used in session_state)
+#   label        : displayed in the UI
+#   column       : col() key from the registry above
+#   type         : "multiselect" | "select" | "toggle"
+#   multi_value  : True if the column contains "/" separated values
 
 FILTERS = [
     {
@@ -114,7 +118,7 @@ FILTERS = [
         "label":       "Entity Type",
         "column":      "entity_type",
         "type":        "multiselect",
-        "multi_value": False,  # "Academia / Facilitator" = valeur unique, pas splittee
+        "multi_value": False,        # "Academia / Facilitator" = valeur unique, pas splittee
     },
     {
         "key":         "sub_type",
@@ -128,7 +132,7 @@ FILTERS = [
         "label":       "Country / Region",
         "column":      "country",
         "type":        "multiselect",
-        "multi_value": True,  # "France / USA" -> ["France", "USA"]
+        "multi_value": True,         # "France / USA" -> ["France", "USA"]
     },
     {
         "key":         "open_to_collab",
@@ -149,7 +153,7 @@ FILTERS = [
         "label":       "Technology Readiness Level",
         "column":      "trl",
         "type":        "multiselect",
-        "multi_value": True,  # "research / experiment" -> ["research", "experiment"]
+        "multi_value": True,         # "research / experiment" -> ["research", "experiment"]
     },
     {
         "key":         "tags",
@@ -159,6 +163,7 @@ FILTERS = [
         "multi_value": True,
     },
 ]
+
 
 # -- Data loading -------------------------------------------------------------
 
@@ -171,16 +176,18 @@ def load_data() -> pd.DataFrame:
 
 
 def _normalize(df: pd.DataFrame) -> pd.DataFrame:
-    # PERF: call select_dtypes once; reuse the result for both strip and fillna
     str_cols = df.select_dtypes(include="object").columns
     df[str_cols] = df[str_cols].apply(lambda c: c.str.strip())
 
+    # FIXED: FILLNA_UNKNOWN_COLS now contains raw column names directly
     for raw_col in FILLNA_UNKNOWN_COLS:
         if raw_col in df.columns:
             df[raw_col] = df[raw_col].fillna("Unknown").astype(str)
 
+    str_cols = df.select_dtypes(include="object").columns
     df[str_cols] = df[str_cols].fillna("")
     return df
+
 
 # -- Unique value extraction --------------------------------------------------
 
@@ -215,6 +222,7 @@ def get_all_quantum_fields(df: pd.DataFrame) -> list:
     """Return all unique quantum fields."""
     return get_unique_values(df, "quantum_field", multi_value=True)
 
+
 # -- Filtering ----------------------------------------------------------------
 
 def apply_filters(df: pd.DataFrame, active_filters: dict) -> pd.DataFrame:
@@ -225,23 +233,22 @@ def apply_filters(df: pd.DataFrame, active_filters: dict) -> pd.DataFrame:
         { filter_key: [selected_value_1, selected_value_2, ...] }
 
     Only filters with non-empty selection lists are applied.
-    Returns a filtered view of the DataFrame (no unnecessary copy).
+    Returns a filtered copy of the DataFrame.
     """
-    # PERF: accumulate a single boolean mask instead of copying df on every filter.
-    #       The copy only happens once at the end via df[mask].
-    mask = pd.Series(True, index=df.index)
+    filt = df.copy()
 
     for f in FILTERS:
-        key     = f["key"]
-        raw_col = col(f["column"])
-        multi   = f["multi_value"]
-        selection = active_filters.get(key, [])
+        key        = f["key"]
+        raw_col    = col(f["column"])
+        multi      = f["multi_value"]
+        selection  = active_filters.get(key, [])
 
-        if not selection or raw_col not in df.columns:
+        if not selection or raw_col not in filt.columns:
             continue
 
         if multi:
-            col_mask = df[raw_col].apply(
+            # Match if any selected value appears in the cell (split on sep)
+            mask = filt[raw_col].apply(
                 lambda cell: any(
                     sel.lower() in [
                         item.strip().lower()
@@ -251,11 +258,11 @@ def apply_filters(df: pd.DataFrame, active_filters: dict) -> pd.DataFrame:
                 )
             )
         else:
-            col_mask = df[raw_col].isin(selection)
+            mask = filt[raw_col].isin(selection)
 
-        mask &= col_mask
+        filt = filt[mask]
 
-    return df[mask]
+    return filt
 
 
 def apply_keyword_search(df: pd.DataFrame, keyword: str) -> pd.DataFrame:
@@ -275,13 +282,10 @@ def apply_keyword_search(df: pd.DataFrame, keyword: str) -> pd.DataFrame:
         col("tech_focus"),
     ]
     existing_cols = [c for c in search_cols if c in df.columns]
-    if not existing_cols:
-        return df
 
-    # PERF: vectorized across all columns at once — no Python for loop per column.
-    mask = df[existing_cols].apply(
-        lambda s: s.str.lower().str.contains(q, na=False)
-    ).any(axis=1)
+    mask = pd.Series(False, index=df.index)
+    for c in existing_cols:
+        mask |= df[c].str.lower().str.contains(q, na=False)
 
     return df[mask]
 

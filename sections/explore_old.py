@@ -1,5 +1,5 @@
 import streamlit as st
-from database import FILTERS, apply_filters, apply_keyword_search, get_unique_values, col as db_col
+from database_old import FILTERS, apply_filters, apply_keyword_search, get_unique_values, col as db_col
 
 """
 sections/explore.py

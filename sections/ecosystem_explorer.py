@@ -8,7 +8,7 @@ geographic distribution — uses the real database (df).
 
 import streamlit as st
 import pandas as pd
-from database import FILTERS, apply_filters, apply_keyword_search, get_unique_values, col as db_col
+from database_old import FILTERS, apply_filters, apply_keyword_search, get_unique_values, col as db_col
 
 
 # ── Card helpers (copied from explore.py) ─────────────────────────────────────
@@ -34,93 +34,47 @@ def _badge(text: str, css_class: str) -> str:
 
 
 def _build_entity_card(row) -> str:
-    """Build the full HTML card for one entity row."""
-    name        = _safe(row, "name")
-    entity_type = _safe(row, "entity_type")
-    sub_type    = _safe(row, "sub_type")
-    affiliation = _safe(row, "affiliation")
-    country     = _safe(row, "country")
-    one_liner   = _safe(row, "one_liner")
-    quantum     = _safe(row, "quantum_field")
-    trl         = _safe(row, "trl")
-    collab      = _safe(row, "open_to_collab")
-    ind_exp     = _safe(row, "industry_exp")
-    looking_for = _safe(row, "looking_for")
-    website     = _safe(row, "website")
-    linkedin    = _safe(row, "linkedin")
-    email       = _safe(row, "email")
-    contact     = _safe(row, "contact_name")
+    """Build a clean, minimal card showing only the essential fields (WIP-friendly)."""
+    # On utilise les noms EXACTS des colonnes Excel pour être sûr de tout récupérer
+    name        = _safe(row, "Entity_Name")
+    affiliation = _safe(row, "Affiliation")
+    sub_type    = _safe(row, "Sub_Type")
+    country     = _safe(row, "Country / Region")
+    website     = _safe(row, "Website")
 
-    # Fallback: use quantum_field as description if one_liner is empty
-    description = one_liner if one_liner else quantum
-
-    # Tag pills from quantum field
-    tags_html = _pills(quantum)
-
-    # Collaboration badge
-    if collab.lower() == "yes":
-        collab_badge = _badge("Open to collaboration", "b-yes")
-    elif collab.lower() == "no":
-        collab_badge = _badge("Not open", "b-no")
-    else:
-        collab_badge = '<span style="color:#888;font-size:0.8rem">Collaboration unknown</span>'
-
-    # TRL badge
-    trl_badge = (
-        f'<span style="background:transparent;color:#9B8EC4;border:1px solid #7C6FA0;'
-        f'border-radius:20px;padding:2px 10px;font-size:0.8rem">TRL: {trl}</span>'
-        if trl else ""
-    )
-
-    # Industry experience badge
-    ind_badge = (
-        '<span style="color:#ffd740;font-size:0.8rem">Industry exp.</span>'
-        if ind_exp.lower() == "yes" else ""
-    )
-
-    # Sub-type and affiliation line
-    meta_parts = [p for p in [entity_type, sub_type, affiliation, country] if p]
+    # Ligne de métadonnées (Affiliation · Pays)
+    meta_parts = [p for p in [affiliation, country] if p]
     meta_line  = " &middot; ".join(meta_parts)
 
-    # Looking for section
-    looking_html = (
-        f'<div style="color:#aaa;font-size:0.82rem;margin-top:6px">'
-        f'<span style="color:#888">Looking for:</span> {looking_for}</div>'
-        if looking_for else ""
+    # Badge Sub-type (optionnel, affiché en haut à droite)
+    sub_badge = (
+        f'<span style="background:#1e1e2f;color:#9B8EC4;border:1px solid #3a3a5a;'
+        f'border-radius:20px;padding:2px 12px;font-size:0.7rem;white-space:nowrap;">{sub_type}</span>'
+        if sub_type else ""
     )
 
-    # Links row
+    # Lien vers le site web
     links = []
     if website.startswith("http"):
-        links.append(f'<a href="{website}" target="_blank">Website</a>')
-    if linkedin.startswith("http"):
-        links.append(f'<a href="{linkedin}" target="_blank">LinkedIn</a>')
-    if "@" in email:
-        label = contact if contact else email
-        links.append(f'<a href="mailto:{email}">{label}</a>')
+        links.append(
+            f'<a href="{website}" target="_blank" style="text-decoration:none;color:#7C6FA0;">🌐 Website</a>'
+        )
     links_html = " &nbsp; ".join(links)
 
     return (
-        f'<div class="entity-card">'
-        # Header
-        f'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'
-        f'<h3 style="margin:0">{name}</h3>'
-        f'<span style="color:#888;font-size:0.8rem;padding-top:4px">{entity_type}</span>'
+        f'<div class="entity-card" style="background:#0d0d1a;border-radius:12px;'
+        f'border:1px solid #2a2a40;padding:16px;height:100%;display:flex;flex-direction:column;">'
+        # En-tête : Nom + badge Sub-type
+        f'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">'
+        f'<h3 style="margin:0;font-size:1.1rem;color:#fff;flex:1;">{name}</h3>'
+        f'{sub_badge}'
         f'</div>'
-        # Meta line
-        f'<div class="meta">{meta_line}</div>'
-        # Description
-        f'<div class="liner">{description}</div>'
-        # Tags
-        f'<div style="margin-bottom:10px">{tags_html}</div>'
-        # Badges row
-        f'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'
-        f'{collab_badge} {trl_badge} {ind_badge}'
+        # Affiliation · Pays
+        f'<div style="color:#aaa;font-size:0.85rem;margin-bottom:10px;">{meta_line}</div>'
+        # Lien site web
+        f'<div style="margin-top:auto;border-top:1px solid #1e1e30;padding-top:10px;font-size:0.9rem;">'
+        f'{links_html}'
         f'</div>'
-        # Looking for
-        f'{looking_html}'
-        # Links
-        f'<div style="font-size:0.88rem;margin-top:10px">{links_html}</div>'
         f'</div>'
     )
 

@@ -4,7 +4,7 @@ warnings.filterwarnings("ignore", message="Accessing `__path__`")
 import streamlit as st
 import pandas as pd
 from pathlib import Path
-from database import load_data
+from database_old import load_data
 from sections import ecosystem_explorer_old, home, explore, assistant, about, submit
 from sections import find_partners, partner_journey
 
@@ -16,13 +16,8 @@ st.set_page_config(
 )
 
 # -- Load CSS ------------------------------------------------------------------
-# PERF: cached so the disk read happens once per Streamlit session,
-#       not on every rerun triggered by user interactions.
-@st.cache_data
-def _load_css() -> str:
-    return Path("style.css").read_text(encoding="utf-8")
-
-st.markdown(f"<style>{_load_css()}</style>", unsafe_allow_html=True)
+css = Path("style.css").read_text(encoding="utf-8")
+st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 # -- Load data -----------------------------------------------------------------
 df = load_data()
@@ -41,7 +36,7 @@ with st.sidebar:
 
     def nav_btn(key: str, label: str, icon: str = ""):
         is_active = st.session_state.page == key
-        full_label = f"{icon} {label}" if icon else label
+        full_label = f"{icon}  {label}" if icon else label
         if st.button(
             full_label,
             key=f"nav_{key}",
@@ -58,12 +53,12 @@ with st.sidebar:
     # ── DISCOVER ──────────────────────────────────────────────────────────────
     st.markdown('<p class="nav-section-label">DISCOVER</p>', unsafe_allow_html=True)
     nav_btn("Explore Ecosystem", "Explore Ecosystem")
-    nav_btn("Find My Partners", "Find My Partners")
+    nav_btn("Find My Partners",  "Find My Partners")
     nav_btn("Partner's Journey", "Partner's Journey")
 
     # ── TOOLS ─────────────────────────────────────────────────────────────────
     st.markdown('<p class="nav-section-label">TOOLS</p>', unsafe_allow_html=True)
-    nav_btn("AI Assistant", "AI Assistant")
+    nav_btn("AI Assistant",    "AI Assistant")
     nav_btn("Submit an Entry", "Submit an Entry")
 
     # ── ABOUT ─────────────────────────────────────────────────────────────────
@@ -76,7 +71,7 @@ with st.sidebar:
     st.markdown(
         '<div style="display:flex;gap:16px;padding:8px 4px;">'
         '<a href="https://www.linkedin.com/company/111068204" target="_blank"'
-        ' style="text-decoration:none;color:#A78BFA;" title="LinkedIn">'
+        '   style="text-decoration:none;color:#A78BFA;" title="LinkedIn">'
         '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">'
         '<path d="M19 0h-14C2.239 0 0 2.239 0 5v14c0 2.761 2.239 5 5 5h14'
         "c2.762 0 5-2.239 5-5V5c0-2.761-2.238-5-5-5zm-11 19H5v-11h3v11z"
@@ -85,7 +80,7 @@ with st.sidebar:
         'c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>'
         "</svg></a>"
         '<a href="mailto:quantact2revolution@gmail.com"'
-        ' style="text-decoration:none;color:#A78BFA;" title="Email">'
+        '   style="text-decoration:none;color:#A78BFA;" title="Email">'
         '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">'
         '<path d="M0 3v18h24V3H0zm21.518 2L12 12.713 2.482 5h19.036z'
         'M2 19V7.183l10 8.104 10-8.104V19H2z"/>'

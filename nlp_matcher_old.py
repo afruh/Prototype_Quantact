@@ -1,20 +1,19 @@
 """
-nlp_matcher.py — QuantAct NLP Matching Engine
+nlp_matcher.py  —  QuantAct NLP Matching Engine
 ================================================
-
 Module OPTIONNEL et indépendant de Streamlit.
 Peut être importé ou testé en CLI sans lancer l'application.
 
 PIPELINE (3 étapes) :
-  1. extract_keywords(query)  — RAKE ou tokenisation de secours
-  2. extract_filters(query)   — keywords → dict compatible apply_filters()
-  3. semantic_search(query)   — cosine similarity sur embeddings (si dispo)
-  4. match(query)             — pipeline complet → (df_résultats, filtres, explication)
+  1. extract_keywords(query)   — RAKE ou tokenisation de secours
+  2. extract_filters(query)    — keywords → dict compatible apply_filters()
+  3. semantic_search(query)    — cosine similarity sur embeddings (si dispo)
+  4. match(query)              — pipeline complet → (df_résultats, filtres, explication)
 
 DÉPENDANCES OPTIONNELLES (requirements_nlp.txt) :
   pip install sentence-transformers rake-nltk
   - Sans sentence-transformers → keyword matching uniquement (mode dégradé)
-  - Sans rake-nltk → tokenisation simple (mode dégradé)
+  - Sans rake-nltk            → tokenisation simple (mode dégradé)
   - rapidfuzz est déjà utilisé par le projet (assistant.py)
 
 INTÉGRATION DANS find_partners.py :
@@ -35,7 +34,6 @@ import pandas as pd
 from typing import Optional
 
 # ── Dépendances optionnelles ──────────────────────────────────────────────────
-
 try:
     from sentence_transformers import SentenceTransformer
     _ST_AVAILABLE = True
@@ -56,8 +54,7 @@ except ImportError:
     _FUZZY_AVAILABLE = False
 
 # ── Imports du projet ─────────────────────────────────────────────────────────
-
-from database import (
+from database_old import (
     FILTERS,
     MULTI_VALUE_SEP,
     apply_filters,
@@ -75,8 +72,8 @@ DEFAULT_MODEL = "all-MiniLM-L6-v2"
 SEMANTIC_THRESHOLD = 0.15
 
 # Seuil fuzzy pour la reconnaissance de tags (0-100)
-FUZZY_TAG_THRESHOLD  = 58
-FUZZY_TYPE_THRESHOLD = 45
+FUZZY_TAG_THRESHOLD    = 58
+FUZZY_TYPE_THRESHOLD   = 45
 FUZZY_COUNTRY_THRESHOLD = 70
 
 # Plage des scores affichés à l'utilisateur (55–97 %)
@@ -129,9 +126,10 @@ STOPWORDS = {
     "new", "some", "such", "it", "its", "we're", "i'm", "not", "but",
 }
 
-# ── Singleton module-level (évite de recharger le modèle à chaque appel) ─────
 
+# ── Singleton module-level (évite de recharger le modèle à chaque appel) ─────
 _singleton: Optional["NLPMatcher"] = None
+
 
 def get_matcher(df: pd.DataFrame, model_name: str = DEFAULT_MODEL) -> "NLPMatcher":
     """
@@ -143,6 +141,7 @@ def get_matcher(df: pd.DataFrame, model_name: str = DEFAULT_MODEL) -> "NLPMatche
         _singleton = NLPMatcher(df, model_name=model_name)
     return _singleton
 
+
 # ── Classe principale ─────────────────────────────────────────────────────────
 
 class NLPMatcher:
@@ -150,45 +149,25 @@ class NLPMatcher:
     Moteur NLP de matching pour QuantAct.
 
     Attributs publics :
-        NLP_MODE   : "semantic" | "keyword" — mode actif selon les dépendances
-        model_name : nom du modèle chargé (ou None)
+      NLP_MODE    : "semantic" | "keyword"   — mode actif selon les dépendances
+      model_name  : nom du modèle chargé (ou None)
 
     Méthodes principales :
-        extract_keywords(query)  → list[str]
-        extract_filters(query)   → dict (compatible apply_filters)
-        semantic_search(query)   → pd.DataFrame (avec colonne _nlp_score)
-        match(query)             → tuple(df, filters, explanation)
+      extract_keywords(query)  → list[str]
+      extract_filters(query)   → dict   (compatible apply_filters)
+      semantic_search(query)   → pd.DataFrame  (avec colonne _nlp_score)
+      match(query)             → tuple(df, filters, explanation)
     """
 
     def __init__(self, df: pd.DataFrame, model_name: str = DEFAULT_MODEL):
-        self.df         = df
-        self.model_name = model_name
-        self.model      = None
-        self._embeddings: Optional[np.ndarray]        = None
-        # PERF: pre-computed L2-normalized embeddings; avoids renormalizing
-        #       the entire corpus on every semantic_search() call.
-        self._embeddings_normed: Optional[np.ndarray] = None
+        self.df          = df
+        self.model_name  = model_name
+        self.model       = None
+        self._embeddings: Optional[np.ndarray] = None
 
         # Valeurs connues de la BD (chargées une fois)
         self._known: dict[str, list[str]] = {}
         self._load_known_values()
-
-        # Téléchargement NLTK en PREMIER — Rake() charge les stopwords dès
-        # l'instanciation, donc les ressources doivent exister avant l'appel.
-        if _RAKE_AVAILABLE:
-            for resource, path in [
-                ("stopwords",  "corpora/stopwords"),
-                ("punkt_tab",  "tokenizers/punkt_tab"),  # NLTK >= 3.9
-                ("punkt",      "tokenizers/punkt"),       # NLTK < 3.9 fallback
-            ]:
-                try:
-                    nltk.data.find(path)
-                except LookupError:
-                    nltk.download(resource, quiet=True)
-
-        # PERF: instantiate Rake once (AFTER NLTK resources are ready) and
-        #       reuse across every extract_keywords() call.
-        self._rake = Rake(min_length=1, max_length=4) if _RAKE_AVAILABLE else None
 
         # Chargement du modèle sémantique (si disponible)
         if _ST_AVAILABLE:
@@ -196,6 +175,18 @@ class NLPMatcher:
             self.NLP_MODE = "semantic"
         else:
             self.NLP_MODE = "keyword"
+
+        # Téléchargement NLTK si RAKE disponible
+        if _RAKE_AVAILABLE:
+            for resource, path in [
+                ("stopwords",  "corpora/stopwords"),
+                ("punkt_tab",  "tokenizers/punkt_tab"),   # NLTK >= 3.9
+                ("punkt",      "tokenizers/punkt"),        # NLTK < 3.9 fallback
+            ]:
+                try:
+                    nltk.data.find(path)
+                except LookupError:
+                    nltk.download(resource, quiet=True)
 
     # ── Chargement interne ─────────────────────────────────────────────────────
 
@@ -210,50 +201,29 @@ class NLPMatcher:
         """Charge le modèle sentence-transformers et pré-calcule les embeddings."""
         self.model = SentenceTransformer(model_name)
         corpus = self._build_corpus()
-        raw = self.model.encode(
+        self._embeddings = self.model.encode(
             corpus,
             convert_to_numpy=True,
             show_progress_bar=False,
             batch_size=64,
         ).astype(np.float32)
-        self._embeddings = raw
-
-        # PERF: pre-normalize corpus vectors once at init.
-        #       semantic_search() only needs to normalize the query vector —
-        #       the (n_entities x dim) normalization is eliminated from hot path.
-        norms = np.linalg.norm(raw, axis=1, keepdims=True) + 1e-8
-        self._embeddings_normed = (raw / norms).astype(np.float32)
 
     def _build_corpus(self) -> list[str]:
-        """
-        Construit un texte représentatif pour chaque entité de la BD.
-
-        PERF: vectorized pandas operations instead of row-by-row iterrows().
-              iterrows() is 10-100x slower than column-level vectorization
-              because it boxes every value into a Python object.
-        """
-        # Only pull columns that actually exist in the DataFrame
-        available = {k: db_col(k) for k in CORPUS_KEYS if db_col(k) in self.df.columns}
-        if not available:
-            return [""] * len(self.df)
-
-        sub = self.df[list(available.values())].fillna("").astype(str)
-
-        # Strip whitespace and replace multi-value separator with space
-        for c in sub.columns:
-            sub[c] = (
-                sub[c]
-                .str.strip()
-                .str.replace(MULTI_VALUE_SEP, " ", regex=False)
-            )
-            # Blank out sentinel nan/none strings produced by pandas str conversion
-            sub[c] = sub[c].where(~sub[c].str.lower().isin(["nan", "none"]), "")
-
-        # Join non-empty parts per row into a single string
-        corpus = (
-            sub.apply(lambda row: ". ".join(v for v in row.values if v), axis=1)
-            .tolist()
-        )
+        """Construit un texte représentatif pour chaque entité de la BD."""
+        corpus = []
+        for _, row in self.df.iterrows():
+            parts = []
+            for key in CORPUS_KEYS:
+                col_name = db_col(key)
+                if col_name not in row.index:
+                    continue
+                val = str(row[col_name]).strip()
+                if val.lower() in ("nan", "none", ""):
+                    continue
+                # Remplace le séparateur multi-valeur par un espace
+                val = val.replace(MULTI_VALUE_SEP, " ")
+                parts.append(val)
+            corpus.append(". ".join(parts) if parts else "")
         return corpus
 
     # ── Extraction de mots-clés ────────────────────────────────────────────────
@@ -262,18 +232,14 @@ class NLPMatcher:
         """
         Extrait les mots-clés de la requête.
         Utilise RAKE si disponible, sinon tokenisation simple.
-
-        PERF: reuses the Rake instance created in __init__ instead of
-              instantiating a new one on every call.
         """
-        if self._rake is not None:
-            self._rake.extract_keywords_from_text(query)
-            phrases = self._rake.get_ranked_phrases()
-            # Add individual tokens so isolated keywords are not missed
-            single = [
-                w.lower() for w in query.split()
-                if w.lower() not in STOPWORDS and len(w) > 2
-            ]
+        if _RAKE_AVAILABLE:
+            r = Rake(min_length=1, max_length=4)
+            r.extract_keywords_from_text(query)
+            phrases = r.get_ranked_phrases()
+            # Ajoute aussi les tokens individuels pour ne pas rater des mots isolés
+            single = [w.lower() for w in query.split()
+                      if w.lower() not in STOPWORDS and len(w) > 2]
             seen: set[str] = set()
             result = []
             for p in phrases + single:
@@ -282,11 +248,9 @@ class NLPMatcher:
                     result.append(p)
             return result[:15]
         else:
-            tokens = [
-                w.lower().strip(".,;:!?()-\"'")
-                for w in query.split()
-                if w.lower() not in STOPWORDS and len(w) > 2
-            ]
+            tokens = [w.lower().strip(".,;:!?()-\"'")
+                      for w in query.split()
+                      if w.lower() not in STOPWORDS and len(w) > 2]
             return list(dict.fromkeys(tokens))[:15]
 
     # ── Extraction de filtres ──────────────────────────────────────────────────
@@ -297,11 +261,11 @@ class NLPMatcher:
         directement compatible avec apply_filters() de database.py.
 
         Exemple :
-            {"entity_type": ["Academia"], "tags": ["Quantum Sensing"], "trl": ["TRL 3"], ...}
+          {"entity_type": ["Academia"], "tags": ["Quantum Sensing"], "trl": ["TRL 3"], ...}
         """
-        q        = query.lower()
+        q = query.lower()
         keywords = self.extract_keywords(query)
-        result   = {f["key"]: [] for f in FILTERS}
+        result = {f["key"]: [] for f in FILTERS}
 
         # ── 1. Entity Type ────────────────────────────────────────────────────
         known_types = self._known.get("entity_type", [])
@@ -320,15 +284,15 @@ class NLPMatcher:
         result["entity_type"] = list(dict.fromkeys(result["entity_type"]))
 
         # ── 2. Tags ───────────────────────────────────────────────────────────
-        known_tags: list[str]  = self._known.get("tags", [])
+        known_tags = self._known.get("tags", [])
         matched_tags: set[str] = set()
 
-        # a) Exact substring match: tag appears in query
+        # a) Correspondance exacte tag ⊂ requête
         for tag in known_tags:
             if tag.lower() in q:
                 matched_tags.add(tag)
 
-        # b) Fuzzy match of each keyword against known tags
+        # b) Fuzzy match de chaque keyword contre tous les tags
         if _FUZZY_AVAILABLE and known_tags:
             for kw in keywords:
                 if len(kw) < 3:
@@ -341,14 +305,17 @@ class NLPMatcher:
                 )
                 for h in hits:
                     matched_tags.add(h[0])
+
         result["tags"] = list(matched_tags)[:6]
 
         # ── 3. Quantum Field ──────────────────────────────────────────────────
-        known_qf: list[str]  = self._known.get("quantum_field", [])
+        known_qf = self._known.get("quantum_field", [])
         matched_qf: set[str] = set()
+
         for qf in known_qf:
             if qf.lower() in q:
                 matched_qf.add(qf)
+
         if _FUZZY_AVAILABLE and known_qf:
             for kw in keywords:
                 hits = rfprocess.extract(
@@ -359,6 +326,7 @@ class NLPMatcher:
                 )
                 for h in hits:
                     matched_qf.add(h[0])
+
         result["quantum_field"] = list(matched_qf)[:4]
 
         # ── 4. TRL ────────────────────────────────────────────────────────────
@@ -367,6 +335,8 @@ class NLPMatcher:
             for category, hints in TRL_HINTS.items():
                 if not any(h in q for h in hints):
                     continue
+                # Cherche dans les vraies valeurs TRL de la BD
+                # (ex: "TRL 1-3", "research", "prototype"…)
                 anchor = {"low": "1", "mid": "5", "high": "8"}[category]
                 if _FUZZY_AVAILABLE:
                     hits = rfprocess.extract(
@@ -379,7 +349,7 @@ class NLPMatcher:
                         result["trl"].append(h[0])
                 else:
                     result["trl"].extend(known_trl[:2])
-        result["trl"] = list(dict.fromkeys(result["trl"]))[:4]
+            result["trl"] = list(dict.fromkeys(result["trl"]))[:4]
 
         # ── 5. Collaboration ──────────────────────────────────────────────────
         known_collab = self._known.get("open_to_collab", [])
@@ -409,24 +379,23 @@ class NLPMatcher:
 
         Si sentence-transformers n'est pas disponible, utilise
         apply_keyword_search() comme fallback.
-
-        PERF: uses pre-computed _embeddings_normed (set at init time) to skip
-              the O(n_entities × dim) L2-normalization that was previously
-              recalculated on every query call.
         """
-        if self.model is None or self._embeddings_normed is None:
+        if self.model is None or self._embeddings is None:
             result = apply_keyword_search(self.df, query).copy()
             result["_nlp_score"] = 0.70
             return result.head(top_k)
 
-        # Encode and normalize query vector only (O(dim), not O(n × dim))
+        # Embedding de la requête
         q_emb = self.model.encode(
             [query], convert_to_numpy=True, show_progress_bar=False
         )[0].astype(np.float32)
-        q_norm = q_emb / (np.linalg.norm(q_emb) + 1e-8)
 
-        # Dot product against pre-normalized corpus vectors = cosine similarity
-        scores = self._embeddings_normed @ q_norm  # shape (n_entities,)
+        # Similarité cosine vectorisée
+        q_norm    = q_emb / (np.linalg.norm(q_emb) + 1e-8)
+        ent_norms = self._embeddings / (
+            np.linalg.norm(self._embeddings, axis=1, keepdims=True) + 1e-8
+        )
+        scores = ent_norms @ q_norm   # shape (n_entities,)
 
         df_copy = self.df.copy()
         df_copy["_nlp_score"] = scores.astype(float)
@@ -448,9 +417,9 @@ class NLPMatcher:
         Pipeline principal.
 
         Retourne :
-            result_df   : DataFrame top_k avec colonnes _nlp_score et _match_pct
-            filters     : dict des filtres extraits (compatible apply_filters)
-            explanation : dict lisible par l'humain (pour l'UI)
+          result_df    : DataFrame top_k avec colonnes _nlp_score et _match_pct
+          filters      : dict des filtres extraits (compatible apply_filters)
+          explanation  : dict lisible par l'humain (pour l'UI)
         """
         # Étape 1 — extraction de filtres
         filters = self.extract_filters(query)
@@ -473,9 +442,9 @@ class NLPMatcher:
 
         # Étape 5 — normalisation des scores en pourcentage lisible (55–97 %)
         if "_nlp_score" in result.columns and len(result) > 1:
-            s = result["_nlp_score"].values.astype(float)
+            s        = result["_nlp_score"].values.astype(float)
             s_min, s_max = s.min(), s.max()
-            span = max(s_max - s_min, 1e-8)
+            span     = max(s_max - s_min, 1e-8)
             normalized = (s - s_min) / span
             result["_match_pct"] = (
                 DISPLAY_SCORE_MIN + normalized * (DISPLAY_SCORE_MAX - DISPLAY_SCORE_MIN)
@@ -495,8 +464,8 @@ class NLPMatcher:
             "country":         filters.get("country", []),
             "mode":            self.NLP_MODE,
             "model":           self.model_name if self.model else None,
-            "n_filters_active":len(active_filters),
-            "n_results":       len(result),
+            "n_filters_active": len(active_filters),
+            "n_results":        len(result),
             "relaxed":         len(filtered) < max(3, top_k // 3),
         }
 
@@ -514,17 +483,18 @@ class NLPMatcher:
             "embeddings_shape":      (
                 self._embeddings.shape if self._embeddings is not None else None
             ),
-            "embeddings_normed":     self._embeddings_normed is not None,
             "n_entities":            len(self.df),
             "n_known_tags":          len(self._known.get("tags", [])),
             "n_known_entity_types":  len(self._known.get("entity_type", [])),
             "NLP_MODE":              self.NLP_MODE,
         }
 
+
 # ── Indicateur public d'availability ─────────────────────────────────────────
 
-NLP_AVAILABLE = True  # Ce module est importable → True
-# find_partners.py gère le cas ImportError séparément
+NLP_AVAILABLE = True   # Ce module est importable → True
+                       # find_partners.py gère le cas ImportError séparément
+
 
 # ── CLI de test ───────────────────────────────────────────────────────────────
 
@@ -537,33 +507,34 @@ Exemples :
   python nlp_matcher.py "quantum sensors for biometric monitoring in wearables"
   python nlp_matcher.py --query "startup quantum computing Geneva" --top 5
   python nlp_matcher.py --status
-""",
+        """,
     )
-    parser.add_argument("query",         nargs="?", default=None, help="Requête en texte libre")
+    parser.add_argument("query", nargs="?", default=None, help="Requête en texte libre")
     parser.add_argument("--query", "-q", dest="query_opt", default=None)
     parser.add_argument("--top",   "-n", type=int, default=8)
     parser.add_argument("--status",      action="store_true",
                         help="Affiche l'état des composants et quitte")
     args = parser.parse_args()
+
     query_text = args.query or args.query_opt
 
     # Chargement de la BD
     print("⏳ Chargement de la base de données…")
-    from database import load_data
+    from database_old import load_data
     df = load_data()
     print(f"   {len(df)} entités chargées.\n")
 
     # Instanciation
     print("⏳ Initialisation du NLPMatcher…")
-    t0      = time.time()
+    t0 = time.time()
     matcher = NLPMatcher(df)
     elapsed = time.time() - t0
-    print(f"   Prêt en {elapsed:.1f}s [mode: {matcher.NLP_MODE}]\n")
+    print(f"   Prêt en {elapsed:.1f}s  [mode: {matcher.NLP_MODE}]\n")
 
     if args.status:
         print("── STATUS ──────────────────────────────────────")
         for k, v in matcher.status().items():
-            print(f"   {k:<28} {v}")
+            print(f"  {k:<28} {v}")
         sys.exit(0)
 
     if not query_text:
@@ -571,19 +542,19 @@ Exemples :
         sys.exit(1)
 
     print(f"── REQUÊTE ─────────────────────────────────────")
-    print(f"   \"{query_text}\"\n")
+    print(f"  \"{query_text}\"\n")
 
     # Extraction de mots-clés
     kw = matcher.extract_keywords(query_text)
     print(f"── MOTS-CLÉS EXTRAITS ({len(kw)}) ─────────────────")
-    print(f"   {kw}\n")
+    print(f"  {kw}\n")
 
     # Extraction de filtres
     filters = matcher.extract_filters(query_text)
     print("── FILTRES DÉTECTÉS ────────────────────────────")
     for k, v in filters.items():
         if v:
-            print(f"   {k:<20} {v}")
+            print(f"  {k:<20} {v}")
     print()
 
     # Pipeline complet
@@ -597,17 +568,18 @@ Exemples :
     name_col  = "Entity_Name"
     type_col  = "Entity_Type"
     score_col = "_match_pct"
+
     for i, (_, row) in enumerate(result_df.iterrows(), 1):
         name  = str(row.get(name_col,  "?"))[:45]
         etype = str(row.get(type_col,  "?"))[:18]
         score = int(row.get(score_col, 0))
-        print(f"   {i:2}. [{score:3d}%] {etype:<20} {name}")
-    print()
+        print(f"  {i:2}. [{score:3d}%] {etype:<20} {name}")
 
+    print()
     print(f"── EXPLICATION ─────────────────────────────────")
     for k, v in explanation.items():
         if v:
-            print(f"   {k:<22} {v}")
+            print(f"  {k:<22} {v}")
 
 
 if __name__ == "__main__":

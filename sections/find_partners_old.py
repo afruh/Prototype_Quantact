@@ -102,11 +102,11 @@ MOCK_FACILITATORS = [
 ]
 
 REFINEMENT_LINES = [
-    ("Domain",      "Quantum sensors for biometric monitoring (wearable / health context)"),
-    ("Core need",   "Quantum-level sensor integration + signal processing expertise"),
-    ("Ideal TRL",   "Research (TRL 2–5) for academic groups · Execution (TRL 4–7) for startups"),
-    ("Constraints", "Miniaturisation capacity · Low-power design · Industry experience"),
-    ("Approach",    "Research groups (core science) + Startups (execution) + Facilitators (IP/funding)"),
+    ("Domain",        "Quantum sensors for biometric monitoring (wearable / health context)"),
+    ("Core need",     "Quantum-level sensor integration + signal processing expertise"),
+    ("Ideal TRL",     "Research (TRL 2–5) for academic groups · Execution (TRL 4–7) for startups"),
+    ("Constraints",   "Miniaturisation capacity · Low-power design · Industry experience"),
+    ("Approach",      "Research groups (core science) + Startups (execution) + Facilitators (IP/funding)"),
 ]
 
 
@@ -244,7 +244,6 @@ def _show_mock_results(query: str) -> None:
     if c2.button("🔄 New search", width="stretch", key="mock_reset"):
         st.session_state.fmp_show_results = False
         st.session_state.fmp_query = ""
-        st.session_state.pop("fmp_nlp_result", None)
         st.rerun()
 
 
@@ -352,10 +351,10 @@ def _show_nlp_results(
 
     # Group by entity type
     if type_col in result_df.columns:
-        groups       = result_df.groupby(type_col, sort=False)
+        groups = result_df.groupby(type_col, sort=False)
         ordered_types = result_df[type_col].unique().tolist()
     else:
-        groups        = {"Entities": result_df}.items()
+        groups = {"Entities": result_df}.items()
         ordered_types = ["Entities"]
 
     for etype in ordered_types:
@@ -371,7 +370,7 @@ def _show_nlp_results(
         )
 
         for _, row in group_df.iterrows():
-            score      = int(row.get("_match_pct", 70))
+            score = int(row.get("_match_pct", 70))
             score_html = _nlp_score_badge(score)
 
             # Use shared card builder if available, otherwise use lightweight fallback
@@ -396,12 +395,12 @@ def _show_nlp_results(
                 st.markdown(card_html, unsafe_allow_html=True)
             else:
                 # Fallback inline card
-                name      = str(row.get(db_col("name"),        "?"))
-                affil     = str(row.get(db_col("affiliation"),  ""))
-                one_liner = str(row.get(db_col("one_liner"),    ""))
-                tags_raw  = str(row.get(db_col("tags"),         ""))
-                country   = str(row.get(db_col("country"),      ""))
-                email     = str(row.get(db_col("email"),        ""))
+                name     = str(row.get(db_col("name"),       "?"))
+                affil    = str(row.get(db_col("affiliation"), ""))
+                one_liner= str(row.get(db_col("one_liner"),   ""))
+                tags_raw = str(row.get(db_col("tags"),        ""))
+                country  = str(row.get(db_col("country"),     ""))
+                email    = str(row.get(db_col("email"),       ""))
 
                 tags_html = " ".join(
                     f'<span class="tag">{t.strip()}</span>'
@@ -445,8 +444,6 @@ def _show_nlp_results(
     if c3.button("🔄 New search", width="stretch", key="nlp_reset"):
         st.session_state.fmp_show_results = False
         st.session_state.fmp_query = ""
-        # PERF: clear cached match result so next search starts fresh
-        st.session_state.pop("fmp_nlp_result", None)
         st.rerun()
 
 
@@ -481,7 +478,7 @@ def render(df: pd.DataFrame) -> None:
             unsafe_allow_html=True,
         )
 
-    # Session state init
+    # Session state
     if "fmp_show_results" not in st.session_state:
         st.session_state.fmp_show_results = False
     if "fmp_query" not in st.session_state:
@@ -542,21 +539,15 @@ def render(df: pd.DataFrame) -> None:
                 label   = "Running NLP analysis…" if use_nlp else "Running simulation…"
                 with st.spinner(label):
                     if use_nlp and _NLP_IMPORT_OK:
-                        # PERF: run matcher.match() here, inside the spinner,
-                        #       and cache the result in session_state.
-                        #       This prevents re-running the semantic search on
-                        #       every subsequent Streamlit rerun (button clicks,
-                        #       navigation, etc.) while results are displayed.
+                        # Pre-load matcher (cached via @st.cache_resource)
                         try:
-                            matcher = _load_matcher_cached()
-                            result_df, filters, explanation = matcher.match(query, top_k=12)
-                            st.session_state.fmp_nlp_result = (result_df, filters, explanation)
+                            _load_matcher_cached()
                         except Exception as e:
                             st.error(f"NLP error: {e}")
                             return
                     else:
                         import time; time.sleep(1.0)
-                st.session_state.fmp_query        = query
+                st.session_state.fmp_query = query
                 st.session_state.fmp_show_results = True
                 st.rerun()
 
@@ -572,7 +563,7 @@ def render(df: pd.DataFrame) -> None:
 
     # ── STEP 2 : Results ─────────────────────────────────────────────────────
     else:
-        query         = st.session_state.fmp_query
+        query = st.session_state.fmp_query
         query_display = query[:90] + ("…" if len(query) > 90 else "")
         st.markdown(
             f'<div style="background:oklch(0.57 0.22 303 / 0.07);border-radius:8px;'
@@ -584,22 +575,14 @@ def render(df: pd.DataFrame) -> None:
         use_nlp = st.session_state.get("fmp_use_nlp", False) and _NLP_IMPORT_OK
 
         if use_nlp:
-            # PERF: retrieve match results from session_state cache (computed in Step 1).
-            #       Falls back to re-running matcher.match() only on cold load
-            #       (e.g. page refresh with results still in state).
-            cached = st.session_state.get("fmp_nlp_result")
-            if cached is not None:
-                result_df, filters, explanation = cached
-            else:
-                with st.spinner("Running semantic search…"):
-                    try:
-                        matcher = _load_matcher_cached()
-                        result_df, filters, explanation = matcher.match(query, top_k=12)
-                        st.session_state.fmp_nlp_result = (result_df, filters, explanation)
-                    except Exception as e:
-                        st.error(f"NLP error: {e}. Falling back to demo mode.")
-                        _show_mock_results(query)
-                        return
+            with st.spinner("Running semantic search…"):
+                try:
+                    matcher = _load_matcher_cached()
+                    result_df, filters, explanation = matcher.match(query, top_k=12)
+                except Exception as e:
+                    st.error(f"NLP error: {e}. Falling back to demo mode.")
+                    _show_mock_results(query)
+                    return
             _show_nlp_results(result_df, filters, explanation, query)
         else:
             _show_mock_results(query)
