@@ -8,7 +8,7 @@ geographic distribution — uses the real database (df).
 
 import streamlit as st
 import pandas as pd
-from database import FILTERS, apply_filters, apply_keyword_search, get_unique_values
+from database import FILTERS, apply_filters, apply_keyword_search, get_unique_values, col as db_col
 
 
 # ── Card helpers (copied from explore.py) ─────────────────────────────────────
@@ -47,7 +47,7 @@ def _build_entity_card(row) -> str:
 
     # Badge Sub-type (optionnel, affiché en haut à droite)
     sub_badge = (
-        f'<span style="background:#1e1e2f;color:#9B8EC4;border:1px solid #3a3a5a;'
+        f'<span style="background:#9347df0f;color:#9B8EC4;border:1px solid #3a3a5a;'
         f'border-radius:20px;padding:2px 12px;font-size:0.7rem;white-space:nowrap;">{sub_type}</span>'
         if sub_type else ""
     )
@@ -61,7 +61,7 @@ def _build_entity_card(row) -> str:
     links_html = " &nbsp; ".join(links)
 
     return (
-        f'<div class="entity-card" style="background:#0d0d1a;border-radius:12px;'
+        f'<div class="entity-card" '
         f'border:1px solid #2a2a40;padding:16px;height:100%;display:flex;flex-direction:column;">'
         # En-tête : Nom + badge Sub-type
         f'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">'
@@ -203,14 +203,6 @@ def render(df: pd.DataFrame) -> None:
         unsafe_allow_html=True,
     )
 
-    st.markdown(
-        '<div class="demo-banner">'
-        "⚡ <strong>Demo mode</strong> — showing real database actors with an "
-        "enhanced visual interface."
-        "</div>",
-        unsafe_allow_html=True,
-    )
-
     # ── Layout: filter sidebar (1) + main grid (3) ────────────────────────────
     left, right = st.columns([1, 3], gap="large")
 
@@ -287,10 +279,10 @@ def render(df: pd.DataFrame) -> None:
             start     = page_idx * PAGE_SIZE
             page_rows = filtered_df.iloc[start : start + PAGE_SIZE]
 
-            # 3-column grid
-            g1, g2, g3 = st.columns(3)
+            # 2-column grid
+            g1, g2 = st.columns(2)
             for i, (_, row) in enumerate(page_rows.iterrows()):
-                target = [g1, g2, g3][i % 3]
+                target = [g1, g2][i % 2]
                 with target:
                     st.markdown(_build_entity_card(row), unsafe_allow_html=True)
 
