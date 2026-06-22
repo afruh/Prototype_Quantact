@@ -16,7 +16,7 @@ from nlp_matcher import NLPMatcher
 
 # ── Card builder from ecosystem_explorer ─────────────────────────────────────
 try:
-    from sections.ecosystem_explorer import _build_entity_card, _safe, _tag_html
+    from sections.ecosystem_explorer import _build_entity_card
     _CARD_IMPORT_OK = True
 except ImportError:
     _CARD_IMPORT_OK = False
@@ -194,39 +194,41 @@ def _show_nlp_results(
                     1,
                 )
                 st.markdown(card_html, unsafe_allow_html=True)
-            else:
-                # Fallback inline card
-                name      = str(row.get(db_col("name"),        "?"))
-                affil     = str(row.get(db_col("affiliation"),  ""))
-                one_liner = str(row.get(db_col("one_liner"),    ""))
-                tags_raw  = str(row.get(db_col("tags"),         ""))
-                country   = str(row.get(db_col("country"),      ""))
-                email     = str(row.get(db_col("email"),        ""))
+            else : 
+                print('ERROR')
+            # else:
+            #     # Fallback inline card
+            #     name      = str(row.get(db_col("name"),        "?"))
+            #     affil     = str(row.get(db_col("affiliation"),  ""))
+            #     one_liner = str(row.get(db_col("one_liner"),    ""))
+            #     tags_raw  = str(row.get(db_col("tags"),         ""))
+            #     country   = str(row.get(db_col("country"),      ""))
+            #     email     = str(row.get(db_col("email"),        ""))
 
-                tags_html = " ".join(
-                    f'<span class="tag">{t.strip()}</span>'
-                    for t in tags_raw.split(" / ")
-                    if t.strip() and tags_raw not in ("nan", "")
-                )
-                email_html = (
-                    f'<div class="match-contact">✉ <a href="mailto:{email}">{email}</a></div>'
-                    if "@" in email else ""
-                )
-                affil_text = f"{affil} · {country}" if affil and country else (affil or country)
-                desc = one_liner if one_liner not in ("nan", "") else ""
+            #     tags_html = " ".join(
+            #         f'<span class="tag">{t.strip()}</span>'
+            #         for t in tags_raw.split(" / ")
+            #         if t.strip() and tags_raw not in ("nan", "")
+            #     )
+            #     email_html = (
+            #         f'<div class="match-contact">✉ <a href="mailto:{email}">{email}</a></div>'
+            #         if "@" in email else ""
+            #     )
+            #     affil_text = f"{affil} · {country}" if affil and country else (affil or country)
+            #     desc = one_liner if one_liner not in ("nan", "") else ""
 
-                st.markdown(
-                    f'<div class="match-card" style="position:relative">'
-                    f'<div style="position:absolute;top:14px;right:16px">{score_html}</div>'
-                    f'<p class="match-card-name">{name}</p>'
-                    f'<p class="match-card-affil">{affil_text}</p>'
-                    f'<p class="match-card-desc">{desc}</p>'
-                    f'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">'
-                    f"{tags_html}</div>"
-                    f"{email_html}"
-                    f"</div>",
-                    unsafe_allow_html=True,
-                )
+            #     st.markdown(
+            #         f'<div class="match-card" style="position:relative">'
+            #         f'<div style="position:absolute;top:14px;right:16px">{score_html}</div>'
+            #         f'<p class="match-card-name">{name}</p>'
+            #         f'<p class="match-card-affil">{affil_text}</p>'
+            #         f'<p class="match-card-desc">{desc}</p>'
+            #         f'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">'
+            #         f"{tags_html}</div>"
+            #         f"{email_html}"
+            #         f"</div>",
+            #         unsafe_allow_html=True,
+            #     )
 
     # CTA buttons
     st.markdown("<br>", unsafe_allow_html=True)
