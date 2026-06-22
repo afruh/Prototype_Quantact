@@ -1,5 +1,5 @@
 import streamlit as st
-from database_old import col as db_col
+from database import col as db_col
 import pandas as pd
 
 

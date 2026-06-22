@@ -8,16 +8,15 @@ geographic distribution — uses the real database (df).
 
 import streamlit as st
 import pandas as pd
-from database_old import FILTERS, apply_filters, apply_keyword_search, get_unique_values, col as db_col
+from database import FILTERS, apply_filters, apply_keyword_search, get_unique_values
 
 
 # ── Card helpers (copied from explore.py) ─────────────────────────────────────
 
 def _safe(row, key: str) -> str:
     """Get a cell value safely — returns empty string for nan/None/empty."""
-    val = row.get(db_col(key), "")
+    val = row.get(key, "")   # ← plus de db_col, on prend la clé telle quelle
     return "" if str(val).lower() in ("nan", "none", "") else str(val).strip()
-
 
 def _pills(text: str, sep: str = " / ") -> str:
     """Convert a separated string into HTML tag pills."""

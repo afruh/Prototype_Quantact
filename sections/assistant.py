@@ -1,7 +1,7 @@
 import streamlit as st
 from rapidfuzz import process, fuzz
 from sections.utils import show_wip_badge
-from database_old import count_results, get_unique_values, get_all_tags, col as db_col
+from database import count_results, get_unique_values, get_all_tags, col as db_col
 
 """
 pages/assistant.py

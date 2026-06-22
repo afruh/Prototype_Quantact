@@ -26,7 +26,7 @@ except ImportError:
 
 # ── Card builder from ecosystem_explorer ─────────────────────────────────────
 try:
-    from sections.ecosystem_explorer_old import _build_entity_card, _safe, _tag_html
+    from sections.ecosystem_explorer import _build_entity_card, _safe, _tag_html
     _CARD_IMPORT_OK = True
 except ImportError:
     _CARD_IMPORT_OK = False
