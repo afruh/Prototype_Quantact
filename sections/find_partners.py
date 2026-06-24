@@ -151,9 +151,26 @@ def _show_nlp_results(
     )
 
     # Group by entity type
+    # Group by entity type
     if type_col in result_df.columns:
-        groups        = result_df.groupby(type_col, sort=False)
-        ordered_types = result_df[type_col].unique().tolist()
+        groups = result_df.groupby(type_col, sort=False)
+        # Récupérer tous les types présents dans les résultats
+        all_types = result_df[type_col].unique().tolist()
+        
+        # Récupérer les types détectés par le NLP (peut être vide)
+        detected_types = explanation.get("entity_types", [])
+        
+        # Construire l'ordre : d'abord les types détectés (dans l'ordre de détection),
+        # puis les autres types (on garde l'ordre d'apparition pour les non-détectés)
+        ordered_types = []
+        # Ajouter d'abord les détectés qui sont effectivement présents dans les résultats
+        for t in detected_types:
+            if t in all_types and t not in ordered_types:
+                ordered_types.append(t)
+        # Ajouter ensuite tous les autres types (non détectés)
+        for t in all_types:
+            if t not in ordered_types:
+                ordered_types.append(t)
     else:
         groups        = {"Entities": result_df}.items()
         ordered_types = ["Entities"]
