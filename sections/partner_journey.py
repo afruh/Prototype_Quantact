@@ -299,20 +299,3 @@ def render(df) -> None:  # noqa: ANN001
                     '<span style="color:#2a1f4a;font-size:1.2rem;">│</span></div>',
                     unsafe_allow_html=True,
                 )
-
-    # ── Journey principle footer ────────────────────────────────────────────────
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown(
-        '<div style="background:linear-gradient(135deg,#100d22,#1e1245);'
-        'border:1px solid rgba(139,92,246,0.25);border-radius:14px;'
-        'padding:28px 36px;text-align:center;">'
-        '<p style="color:#A78BFA;font-size:1.15rem;font-weight:600;margin-bottom:8px;">'
-        "Translate → Structure → Connect"
-        "</p>"
-        '<p style="color:#7C6FA0;font-size:0.9rem;max-width:560px;margin:0 auto;line-height:1.7;">'
-        "Every step in the partner journey is designed to reduce friction and increase "
-        "actionability. QuantAct is not a directory — it's a collaboration engine."
-        "</p>"
-        "</div>",
-        unsafe_allow_html=True,
-    )

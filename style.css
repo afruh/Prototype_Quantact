@@ -615,12 +615,12 @@ a:hover { color: var(--a600) !important; }
   box-shadow: 0 2px 8px oklch(0.57 0.22 303 / 0.25);
 }
 .journey-step-title { font-size: 1.02rem; font-weight: 600; color: var(--a500); margin: 0 0 5px; }
-.journey-step-desc  { font-size: 0.88rem; color: var(--t2); line-height: 1.62; margin: 0; }
+.journey-step-desc  { font-size: 0.88rem; color: #fff; line-height: 1.62; margin: 0; }
 
 .journey-feature { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--b0); }
 .journey-feature:last-child { border-bottom: none; }
 .journey-feature-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--a500); margin-top: 7px; flex-shrink: 0; }
-.journey-feature-text { font-size: 0.86rem; color: var(--t2); line-height: 1.55; }
+.journey-feature-text { font-size: 0.86rem; color:#fff; line-height: 1.55; }
 
 .ui-preview {
   background: var(--surface-3);

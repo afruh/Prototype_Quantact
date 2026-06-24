@@ -71,7 +71,7 @@ def _build_entity_card(row) -> str:
         # Affiliation · Pays
         f'<div style="color:#aaa;font-size:0.85rem;margin-bottom:10px;">{meta_line}</div>'
         # Lien site web
-        f'<div style="margin-top:auto;border-top:1px solid #1e1e30;padding-top:10px;font-size:0.9rem;">'
+        f'<div style="margin-top:auto;border-top:1px solid #ffffff;padding-top:10px;font-size:0.9rem;">'
         f'{links_html}'
         f'</div>'
         f'</div>'
